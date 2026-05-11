@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🐺 Вовки & Вівці</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg-deep:#050d1a;--bg-mid:#08152e;--bg-surface:#0d1f40;
+  --gold:#c9a84c;--gold-light:#f0d080;--silver:#7fa8c9;--moon:#e8f4ff;
+  --text:#d4e8ff;--text-dim:#7fa8c9;
+  --red:#e05555;--green:#4ade80;--teal:#2dd4bf;
+  --r:14px;--rl:20px;
+}
+html,body{background:#050d1a;font-family:'Crimson Text',Georgia,serif;color:var(--text);overscroll-behavior-x:none}
+body{display:flex;justify-content:center;min-height:100vh}
+#app{width:100%;max-width:430px;min-height:100vh;position:relative;overflow-x:hidden;overflow-y:auto;transition:background 1.2s ease}
+
+/* ── Phase backgrounds ── */
+#app.phase-night{background:linear-gradient(180deg,#02060f 0%,#040b1e 35%,#060e26 70%,#080e2e 100%)}
+#app.phase-morning{background:linear-gradient(180deg,#180e04 0%,#2e1a08 25%,#3d2510 50%,#4a3018 75%,#3a2a20 100%)}
+#app.phase-day{background:linear-gradient(180deg,#0a1a28 0%,#0f2535 25%,#0d3040 50%,#0e3545 75%,#0c2a38 100%)}
+#app.phase-home{background:linear-gradient(180deg,#050d1a 0%,#08152e 50%,#0d1f40 100%)}
+
+/* Animated sky canvas */
+#bgc{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;pointer-events:none;z-index:0}
+
+.screen{display:none;position:relative;z-index:1;padding:0 18px 60px;animation:fi .4s ease}
+.screen.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.hs{height:108px}
+
+/* ── Typography ── */
+.ttl{font-family:'Cinzel',serif;font-size:27px;font-weight:900;background:linear-gradient(135deg,var(--gold-light),var(--gold),#8b5e0a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;filter:drop-shadow(0 0 18px rgba(201,168,76,.4));line-height:1.2}
+.sub{font-family:'Cinzel',serif;font-size:11px;letter-spacing:5px;color:var(--silver);text-align:center;margin-top:5px}
+.slbl{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--silver);text-transform:uppercase;margin-bottom:9px}
+
+/* ── Buttons ── */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r);font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:transform .12s,filter .15s;margin-bottom:9px;text-transform:uppercase;position:relative;overflow:hidden}
+.btn:active{transform:scale(.96);filter:brightness(.85)}
+.bg{background:linear-gradient(135deg,#f0c040,#d4860a);color:#0a0500;text-shadow:0 1px 0 rgba(255,255,255,.2);box-shadow:0 4px 20px rgba(240,180,40,.35)}
+.bg:hover{filter:brightness(1.12)}
+.bb{background:rgba(74,144,226,.2);color:#c8e0ff;border:1px solid rgba(74,144,226,.55);box-shadow:0 2px 12px rgba(74,144,226,.2)}
+.bb:hover{background:rgba(74,144,226,.32);filter:brightness(1.1)}
+.bt{background:linear-gradient(135deg,#0e5858,#0a3838);color:#40f0e0;border:1px solid rgba(45,212,191,.6);box-shadow:0 4px 16px rgba(45,212,191,.2)}
+.bt:hover{filter:brightness(1.15)}
+.bsm{padding:9px 14px;font-size:11px;width:auto;margin-bottom:0}
+
+/* ── Panels ── */
+.ibox{background:rgba(5,15,35,.55);border:1px solid rgba(201,168,76,.2);border-radius:var(--r);padding:13px 15px;font-size:14px;color:rgba(196,220,255,.72);line-height:1.65;margin-bottom:14px}
+
+/* ── Celestial objects ── */
+.sky-obj{position:fixed;top:52px;right:22px;width:68px;height:68px;border-radius:50%;z-index:0;pointer-events:none;transition:all 1.2s ease}
+/* night = blue moon */
+.phase-night .sky-obj,.phase-home .sky-obj{background:radial-gradient(circle at 38% 38%,#e8f4ff,#4a90e2 55%,#1a3a6e);box-shadow:0 0 30px rgba(74,144,226,.55),0 0 80px rgba(74,144,226,.2)}
+/* morning = orange sun rising */
+.phase-morning .sky-obj{background:radial-gradient(circle at 40% 40%,#fff4c0,#ffb347 55%,#e8680a);box-shadow:0 0 35px rgba(255,160,50,.7),0 0 90px rgba(255,120,20,.3)}
+/* day = bright sun */
+.phase-day .sky-obj{background:radial-gradient(circle at 40% 40%,#fffde0,#ffe066 45%,#ffb800);box-shadow:0 0 40px rgba(255,220,0,.65),0 0 100px rgba(255,200,0,.25)}
+
+/* ── Home ── */
+.cbox{background:rgba(10,24,48,.6);border:1px solid rgba(74,144,226,.2);border-radius:var(--rl);padding:15px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cbtn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(74,144,226,.55);background:rgba(74,144,226,.22);color:#93c5fd;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,filter .15s}
+.cbtn:active{background:rgba(74,144,226,.4);filter:brightness(1.2)}
+.cbtn:hover{background:rgba(74,144,226,.32)}
+.cnum{font-family:'Cinzel',serif;font-size:48px;font-weight:700;color:var(--moon);line-height:1}
+.dforest{text-align:center;font-size:17px;letter-spacing:10px;opacity:.3;margin:13px 0}
+
+/* ── Roster ── */
+.rrow{display:flex;align-items:center;gap:10px;padding:10px 13px;background:rgba(8,20,50,.55);border-radius:12px;margin-bottom:7px;border:1px solid rgba(74,144,226,.12);transition:border-color .15s}
+.ricon{font-size:22px;flex-shrink:0;cursor:pointer}
+.rname{font-family:'Cinzel',serif;font-size:11px;cursor:pointer}
+.rteam{font-size:10px;padding:2px 7px;border-radius:9px;margin-top:2px;display:inline-block}
+.rctrl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.rcnt{font-family:'Cinzel',serif;font-size:18px;color:var(--moon);min-width:22px;text-align:center}
+.rbtn{width:30px;height:30px;border-radius:50%;border:1px solid rgba(74,144,226,.5);background:rgba(74,144,226,.2);color:#93c5fd;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.rbtn:active{background:rgba(74,144,226,.4)}
+.rtotal{font-family:'Cinzel',serif;font-size:13px;color:var(--silver);text-align:center;padding:9px}
+.rok{color:var(--green)}.rwarn{color:var(--red)}
+.role-expand{display:none;padding:10px 0 4px;border-top:1px solid rgba(255,255,255,.07);margin-top:6px}
+.role-expand.open{display:block}
+.role-expand li{font-size:13px;color:rgba(212,232,255,.78);line-height:1.7;list-style:none}
+
+/* ── Toggle ── */
+.trow{display:flex;align-items:center;justify-content:space-between;background:rgba(8,20,50,.55);border:1px solid rgba(74,144,226,.2);border-radius:var(--r);padding:13px 15px;margin-bottom:10px}
+.tlbl{font-family:'Cinzel',serif;font-size:13px;color:var(--text)}
+.tsw{position:relative;width:50px;height:28px;cursor:pointer}
+.tsw input{display:none}
+.ttr{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:20px;border:1px solid rgba(74,144,226,.2);transition:background .2s}
+.tsw input:checked~.ttr{background:rgba(74,144,226,.4);border-color:rgba(74,144,226,.6)}
+.tkn{position:absolute;top:4px;left:4px;width:20px;height:20px;background:var(--silver);border-radius:50%;transition:transform .2s,background .2s}
+.tsw input:checked~.ttr~.tkn{transform:translateX(22px);background:#93c5fd}
+
+/* ── Timer ── */
+.tmrbox{background:rgba(5,15,40,.6);border:1px solid rgba(74,144,226,.2);border-radius:var(--rl);padding:14px 18px;margin-bottom:14px}
+.tmrdisp{font-family:'Cinzel',serif;font-size:50px;font-weight:700;color:var(--moon);text-align:center;line-height:1;letter-spacing:4px}
+.tmrdisp.urgent{color:var(--red);animation:blk .7s ease-in-out infinite}
+@keyframes blk{0%,100%{opacity:1}50%{opacity:.3}}
+.tmrctrl{display:flex;gap:8px;margin-top:10px}
+.tmrset{display:flex;align-items:center;gap:12px;padding:10px 0}
+.tmrsetlbl{font-size:14px;color:var(--text-dim);flex:1}
+
+/* ── Cover ── */
+#screen-cover{background:#010508;min-height:100vh}
+.covi{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 24px;cursor:pointer}
+.covmoon{font-size:90px;margin-bottom:28px;filter:drop-shadow(0 0 30px rgba(74,144,226,.55))}
+.covlbl{font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;color:var(--silver);margin-bottom:8px}
+.covpl{font-family:'Cinzel',serif;font-size:25px;color:var(--gold)}
+.covtap{font-size:13px;color:var(--silver);letter-spacing:2px;margin-top:40px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.28}50%{opacity:1}}
+
+/* ── Role card ── */
+.rolecard{border-radius:var(--rl);padding:24px 18px;text-align:center;margin-bottom:14px}
+.rcico{font-size:66px;display:block;margin-bottom:10px}
+.rcnm{font-family:'Cinzel',serif;font-size:21px;font-weight:700;margin-bottom:7px}
+.rcds{font-size:15px;font-style:italic;opacity:.85;margin-bottom:11px}
+.tbadge{display:inline-block;padding:4px 13px;border-radius:20px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.ablbox{border-radius:var(--rl);padding:15px;margin-bottom:14px}
+.ablrow{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.ablrow:last-child{border-bottom:none}
+.ablemi{font-size:17px;flex-shrink:0}
+.abltxt{font-size:14px;color:rgba(212,232,255,.85);line-height:1.4}
+.ninp{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(74,144,226,.35);border-radius:var(--r);padding:13px 15px;font-family:'Crimson Text',serif;font-size:19px;color:var(--moon);outline:none;margin-bottom:13px;transition:border-color .2s}
+.ninp:focus{border-color:rgba(74,144,226,.7)}
+.ninp::placeholder{color:var(--silver);opacity:.5}
+.pbar{height:3px;background:rgba(255,255,255,.08);border-radius:10px;margin-bottom:20px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,#c9a84c,#7a5c10);border-radius:10px;transition:width .4s ease}
+
+/* ── Player list ── */
+.plist{background:rgba(5,15,35,.45);border-radius:var(--rl);border:1px solid rgba(74,144,226,.14);overflow:hidden;margin-bottom:14px}
+.prow{display:flex;align-items:center;gap:11px;padding:11px 15px;border-bottom:1px solid rgba(255,255,255,.05)}
+.prow:last-child{border-bottom:none}
+.pnum{font-family:'Cinzel',serif;font-size:12px;color:var(--silver);width:20px;flex-shrink:0}
+.pname{font-size:16px;color:var(--moon);flex:1}
+.pico{font-size:20px}
+.pdead{opacity:.38;text-decoration:line-through}
+
+/* ── Night sections ── */
+.nsec{border-radius:var(--rl);padding:14px;margin-bottom:11px;background:rgba(2,8,30,.7);border:1px solid rgba(80,60,160,.3)}
+.nshdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.nsico{font-size:21px}
+.nstit{font-family:'Cinzel',serif;font-size:13px;font-weight:600}
+.pkrow{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;cursor:pointer;margin-bottom:6px;background:rgba(255,255,255,.04);border:1px solid transparent;transition:background .15s,border-color .15s}
+.pkrow.sel{background:rgba(74,144,226,.12);border-color:rgba(74,144,226,.38)}
+.pkrow:active{background:rgba(74,144,226,.2)}
+.pkico{font-size:16px;flex-shrink:0}
+.pknm{font-size:14px;color:var(--moon);flex:1}
+.pkck{font-size:15px;color:var(--gold)}
+
+/* ── Morning event cards ── */
+.evc{display:flex;align-items:flex-start;gap:12px;padding:13px;border-radius:var(--r);margin-bottom:9px}
+.evico{font-size:26px;flex-shrink:0;padding-top:2px}
+.evtit{font-family:'Cinzel',serif;font-size:13px;font-weight:600;margin-bottom:3px}
+.evdsc{font-size:13px;color:rgba(212,232,255,.8);line-height:1.5}
+.ev-death{background:rgba(100,10,10,.55);border:1px solid rgba(224,85,85,.38)}
+.ev-saved{background:rgba(8,55,20,.55);border:1px solid rgba(74,222,128,.38)}
+.ev-blocked{background:rgba(55,40,5,.55);border:1px solid rgba(201,168,76,.38)}
+.ev-info{background:rgba(10,25,65,.55);border:1px solid rgba(74,144,226,.38)}
+
+/* ── Dog box ── */
+.dogbox{background:rgba(8,18,45,.65);border:1px solid rgba(201,168,76,.32);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.doglbl{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:5px}
+.dogres{font-family:'Cinzel',serif;font-size:14px;color:var(--gold)}
+
+/* ── Day roles panel ── */
+.drp{background:rgba(5,20,15,.55);border:1px solid rgba(74,144,226,.16);border-radius:var(--rl);padding:14px;margin-bottom:13px}
+.drptit{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:11px}
+.drgrp{margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,.05)}
+.drgrp:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.drgnm{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.drgpl{font-size:14px;color:var(--text-dim);padding-left:28px;line-height:1.6}
+
+/* ══ ANIMATIONS ══ */
+
+/* Screen entrance */
+@keyframes fi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fiUp{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@keyframes fiScale{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+
+/* Role card drops in */
+@keyframes dropIn{from{opacity:0;transform:translateY(-30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Glow pulse for moon/sun */
+@keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 18px currentColor)}50%{filter:drop-shadow(0 0 38px currentColor)}}
+
+/* Float for cover moon */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* Shake for wrong action */
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* Stamp entrance */
+@keyframes stampDrop{from{opacity:0;transform:scale(1.4) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+
+/* Card flip */
+@keyframes cardFlip{0%{transform:rotateY(-90deg);opacity:0}100%{transform:rotateY(0deg);opacity:1}}
+
+/* Event card slide in */
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+
+/* Night fog drift */
+@keyframes fogDrift{0%{transform:translateX(-5%)}50%{transform:translateX(5%)}100%{transform:translateX(-5%)}}
+
+/* Button press ripple */
+.btn{position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.08);transform:scale(0);border-radius:inherit;transition:transform .3s ease,opacity .3s ease;opacity:0}
+.btn:active::after{transform:scale(1);opacity:1;transition:none}
+
+/* Animated screen entrance */
+.screen.active{animation:fi .4s cubic-bezier(.2,.8,.3,1) both}
+
+/* Role card animation */
+.rolecard{animation:cardFlip .5s cubic-bezier(.2,.8,.3,1) both}
+
+/* Event cards stagger */
+.evc:nth-child(1){animation:slideInLeft .35s .05s both}
+.evc:nth-child(2){animation:slideInLeft .35s .12s both}
+.evc:nth-child(3){animation:slideInLeft .35s .19s both}
+.evc:nth-child(4){animation:slideInLeft .35s .26s both}
+.evc:nth-child(5){animation:slideInLeft .35s .33s both}
+
+/* Cover moon floats */
+.covmoon{animation:float 4s ease-in-out infinite}
+
+/* Sky object glow pulses */
+.sky-obj{animation:glowPulse 3s ease-in-out infinite}
+
+/* Player rows stagger in */
+.prow{animation:fi .3s both}
+.prow:nth-child(1){animation-delay:.04s}
+.prow:nth-child(2){animation-delay:.08s}
+.prow:nth-child(3){animation-delay:.12s}
+.prow:nth-child(4){animation-delay:.16s}
+.prow:nth-child(5){animation-delay:.20s}
+.prow:nth-child(6){animation-delay:.24s}
+.prow:nth-child(7){animation-delay:.28s}
+.prow:nth-child(8){animation-delay:.32s}
+.prow:nth-child(9){animation-delay:.36s}
+.prow:nth-child(10){animation-delay:.40s}
+
+/* Picker rows slide in */
+.pkrow{animation:fi .25s both}
+.pkrow:nth-child(1){animation-delay:.03s}
+.pkrow:nth-child(2){animation-delay:.07s}
+.pkrow:nth-child(3){animation-delay:.11s}
+.pkrow:nth-child(4){animation-delay:.15s}
+.pkrow:nth-child(5){animation-delay:.19s}
+.pkrow:nth-child(6){animation-delay:.23s}
+.pkrow:nth-child(7){animation-delay:.27s}
+.pkrow:nth-child(8){animation-delay:.31s}
+
+/* Night fog overlay */
+.night-fog{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:200px;background:linear-gradient(180deg,rgba(30,0,80,.18) 0%,transparent 100%);pointer-events:none;z-index:0;animation:fogDrift 12s ease-in-out infinite}
+
+/* Morning sunrays */
+.morning-rays{position:fixed;top:-40px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,180,50,.04) 20deg,transparent 40deg,rgba(255,180,50,.04) 60deg,transparent 80deg,rgba(255,180,50,.04) 100deg,transparent 120deg,rgba(255,180,50,.04) 140deg,transparent 160deg,rgba(255,180,50,.04) 180deg,transparent 200deg,rgba(255,180,50,.04) 220deg,transparent 240deg,rgba(255,180,50,.04) 260deg,transparent 280deg,rgba(255,180,50,.04) 300deg,transparent 320deg,rgba(255,180,50,.04) 340deg,transparent 360deg);pointer-events:none;z-index:0;animation:rotateSun 40s linear infinite;border-radius:50%}
+@keyframes rotateSun{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
+
+/* Stamp emoji drop */
+#stamp-overlay .ghost-icon{animation:stampDrop .5s cubic-bezier(.2,1.4,.4,1) both}
+
+/* Win text glow */
+.wintxt{animation:fiScale .6s cubic-bezier(.2,.8,.3,1) both;text-align:center;width:100%}
+
+/* Handoff crown float */
+#screen-handoff .crown-ico{animation:float 3s ease-in-out infinite}
+
+/* Roster rows animate in */
+.rrow{animation:fi .28s both}
+.rrow:nth-child(1){animation-delay:.03s}.rrow:nth-child(2){animation-delay:.06s}
+.rrow:nth-child(3){animation-delay:.09s}.rrow:nth-child(4){animation-delay:.12s}
+.rrow:nth-child(5){animation-delay:.15s}.rrow:nth-child(6){animation-delay:.18s}
+.rrow:nth-child(7){animation-delay:.21s}.rrow:nth-child(8){animation-delay:.24s}
+.rrow:nth-child(9){animation-delay:.27s}.rrow:nth-child(10){animation-delay:.30s}
+.rrow:nth-child(11){animation-delay:.33s}
+
+/* Night sections animate in */
+.nsec{animation:fi .35s both}
+.nsec:nth-child(1){animation-delay:.05s}.nsec:nth-child(2){animation-delay:.12s}
+.nsec:nth-child(3){animation-delay:.19s}.nsec:nth-child(4){animation-delay:.26s}
+.nsec:nth-child(5){animation-delay:.33s}.nsec:nth-child(6){animation-delay:.40s}
+
+/* Rules blocks */
+.rules-block{animation:fi .3s both}
+.rules-block:nth-child(1){animation-delay:.04s}.rules-block:nth-child(2){animation-delay:.09s}
+.rules-block:nth-child(3){animation-delay:.14s}.rules-block:nth-child(4){animation-delay:.19s}
+.rules-block:nth-child(5){animation-delay:.24s}.rules-block:nth-child(6){animation-delay:.29s}
+.rules-block:nth-child(7){animation-delay:.34s}.rules-block:nth-child(8){animation-delay:.39s}
+
+/* Selected picker row pulse */
+.pkrow.sel{animation:selPulse .25s ease both}
+@keyframes selPulse{0%{transform:scale(1)}50%{transform:scale(1.025)}100%{transform:scale(1)}}
+
+/* Death event — red flash */
+.ev-death{animation:slideInLeft .35s both, deathFlash .6s .4s both}
+@keyframes deathFlash{0%{box-shadow:0 0 0 0 rgba(224,85,85,.6)}100%{box-shadow:0 0 20px 0 rgba(224,85,85,0)}}
+
+/* Saved event — green shimmer */
+.ev-saved{animation:slideInLeft .35s both, savedShimmer .6s .4s both}
+@keyframes savedShimmer{0%{box-shadow:0 0 0 0 rgba(74,222,128,.5)}100%{box-shadow:0 0 20px 0 rgba(74,222,128,0)}}
+
+/* Progress bar fill animation */
+.pfill{transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* Toggle switch */
+.tkn{transition:transform .25s cubic-bezier(.4,0,.2,1),background .25s}
+
+/* Timer urgent shake */
+.tmrdisp.urgent{animation:blk .7s ease-in-out infinite, shake .5s ease-in-out}
+
+#screen-handoff{background:#020810;padding:0;min-height:100vh}
+#gov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;overflow-y:auto}
+#gov.show{display:flex;align-items:flex-start;justify-content:center}
+.gomod{width:100%;max-width:430px;background:#060e1e;border-radius:22px;border:1px solid rgba(45,212,191,.32);padding:26px 22px;margin:18px 14px;text-align:center}
+.rules-block{background:rgba(8,20,50,.55);border:1px solid rgba(74,144,226,.18);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
+.rules-h{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:1px}
+.rules-p{font-size:14px;color:rgba(212,232,255,.78);line-height:1.75}
+.hcard{background:rgba(5,15,40,.5);border:1px solid rgba(74,144,226,.12);border-radius:var(--r);padding:13px;margin-bottom:7px}
+.hrnd{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:7px}
+.hline{display:flex;gap:7px;margin-bottom:4px;font-size:13px;color:var(--text-dim);line-height:1.4}
+
+/* ── Misc ── */
+.btag{font-size:11px;color:var(--gold);background:rgba(201,168,76,.12);padding:2px 7px;border-radius:8px;border:1px solid rgba(201,168,76,.25)}
+/* Night sections get darker purple tint */
+.phase-night .nsec{background:rgba(2,4,20,.75);border-color:rgba(100,80,200,.35)}
+/* Morning sections get warm tint */
+.phase-morning .nsec{background:rgba(30,12,4,.7);border-color:rgba(200,130,50,.3)}
+/* Day sections get teal/green tint */
+.phase-day .nsec{background:rgba(4,20,16,.7);border-color:rgba(50,160,120,.3)}
+
+/* ── Welcome screen ── */
+#screen-welcome{background:transparent;padding:0;min-height:100vh}
+.welcome-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 28px;position:relative;z-index:2}
+@keyframes logoAppear{0%{opacity:0;transform:scale(.7) translateY(20px)}60%{transform:scale(1.06) translateY(-4px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes taglineIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes btnIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.welcome-logo{font-size:96px;display:block;margin-bottom:20px;animation:logoAppear .9s cubic-bezier(.2,1,.3,1) both;filter:drop-shadow(0 0 30px rgba(74,144,226,.4))}
+.welcome-title{font-family:'Cinzel',serif;font-size:34px;font-weight:900;background:linear-gradient(135deg,#fff8e0,var(--gold-light),var(--gold),#8b5e0a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 24px rgba(201,168,76,.5));line-height:1.2;animation:taglineIn .7s .4s cubic-bezier(.2,1,.3,1) both}
+.welcome-sub{font-family:'Cinzel',serif;font-size:12px;letter-spacing:6px;color:var(--silver);margin-top:8px;animation:taglineIn .7s .55s both}
+.welcome-divider{display:flex;align-items:center;gap:14px;margin:28px 0;animation:taglineIn .7s .65s both;width:100%;max-width:300px}
+.welcome-divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent)}
+.welcome-divider-icon{font-size:16px;opacity:.45}
+.welcome-desc{font-size:15px;color:rgba(212,232,255,.6);line-height:1.8;max-width:300px;animation:taglineIn .7s .72s both}
+.welcome-btn-wrap{width:100%;max-width:340px;margin-top:36px;animation:btnIn .8s .9s cubic-bezier(.2,1,.3,1) both}
+.welcome-roles{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;animation:taglineIn .7s .8s both}
+.welcome-role-chip{font-size:22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.welcome-role-chip:hover{transform:scale(1.18)}
+.welcome-version{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:rgba(127,168,201,.3);margin-top:28px;animation:taglineIn .7s 1.1s both}
+
+/* ── Raccoon fullscreen ── */
+#raccoon-reveal{display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#04020f,#080418,#0a0520);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 24px;cursor:pointer}
+#raccoon-reveal.show{display:flex}
+</style>
+</head>
+<body>
+<div id="app" class="phase-home">
+<canvas id="bgc"></canvas>
+<div class="sky-obj"></div>
+
+<!-- WELCOME -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-wrap">
+    <!-- Logo: wolf emoji -->
+    <div style="animation:logoAppear .9s cubic-bezier(.2,1,.3,1) both;margin-bottom:18px;font-size:110px;line-height:1;filter:drop-shadow(0 0 30px rgba(100,140,255,.5))">🐺</div>
+    <div class="welcome-title">Вовки<br>&amp; Вівці</div>
+    <div class="welcome-sub">рольова гра</div>
+
+    <div class="welcome-divider">
+      <div class="welcome-divider-line"></div>
+      <span class="welcome-divider-icon">🌙</span>
+      <div class="welcome-divider-line"></div>
+    </div>
+
+    <div class="welcome-desc">
+      Хто вовк, а хто вівця?<br>
+      Логіка, інтуїція та союзники<br>
+      кожної ночі у лісі
+    </div>
+
+    <div class="welcome-roles">
+      <div class="welcome-role-chip" title="Вовк">🐺</div>
+      <div class="welcome-role-chip" title="Тигр">🐯</div>
+      <div class="welcome-role-chip" title="Кіт">🐱</div>
+      <div class="welcome-role-chip" title="Пес">🐕</div>
+      <div class="welcome-role-chip" title="Ведмідь">🐻</div>
+      <div class="welcome-role-chip" title="Лев">🦁</div>
+      <div class="welcome-role-chip" title="Лис">🦊</div>
+      <div class="welcome-role-chip" title="Горила">🦍</div>
+      <div class="welcome-role-chip" title="Єнот">🦝</div>
+      <div class="welcome-role-chip" title="Вівця">🐑</div>
+    </div>
+
+    <div class="welcome-btn-wrap">
+      <button class="btn bg" onclick="goTo('screen-home')" style="font-size:15px;padding:16px;letter-spacing:3px">
+        ПОЧАТИ ГРУ 🌲
+      </button>
+      <button class="btn bb" onclick="goTo('screen-rules')" style="font-size:13px">
+        Правила гри
+      </button>
+    </div>
+
+    <div class="welcome-version">v2.0 · 2025</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <div class="hs"></div>
+
+  <!-- Wolf emoji logo -->
+  <div style="text-align:center;margin-bottom:14px;font-size:72px;line-height:1;filter:drop-shadow(0 0 20px rgba(100,140,255,.4))">🐺</div>
+
+  <div class="ttl">Вовки &amp; Вівці</div>
+  <div class="sub">рольова гра</div>
+  <div class="dforest">🌲 🌙 🌲</div>
+  <div class="ibox">Введіть кількість гравців, потім налаштуйте склад і таймер.</div>
+  <div class="slbl">Кількість гравців</div>
+  <div class="cbox">
+    <button class="cbtn" onclick="chCnt(-1)">−</button>
+    <span class="cnum" id="cnt-disp">8</span>
+    <button class="cbtn" onclick="chCnt(+1)">+</button>
+  </div>
+  <button class="btn bg" onclick="goSetup()">Налаштувати гру →</button>
+  <button class="btn bb" onclick="goTo('screen-rules')">Правила гри</button>
+</div>
+
+<!-- RULES -->
+<div class="screen" id="screen-rules">
+  <div class="hs"></div>
+  <div class="ttl" style="font-size:22px">Правила гри</div>
+  <div class="sub">🐺 вовки &amp; вівці</div>
+  <div style="height:14px"></div>
+
+  <!-- Tab switcher -->
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <button id="tab-btn-general" onclick="switchRulesTab('general')"
+      style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;cursor:pointer;background:rgba(201,168,76,.25);color:#f0d080;border:1px solid rgba(201,168,76,.5)">
+      📖 ЗАГАЛЬНІ
+    </button>
+    <button id="tab-btn-phases" onclick="switchRulesTab('phases')"
+      style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;cursor:pointer;background:rgba(255,255,255,.06);color:var(--silver);border:1px solid rgba(255,255,255,.1)">
+      🌙 ФАЗИ
+    </button>
+    <button id="tab-btn-roles" onclick="switchRulesTab('roles')"
+      style="flex:1;padding:10px;border:none;border-radius:10px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;cursor:pointer;background:rgba(255,255,255,.06);color:var(--silver);border:1px solid rgba(255,255,255,.1)">
+      🐾 РОЛІ
+    </button>
+  </div>
+
+  <!-- TAB: GENERAL -->
+  <div id="tab-general">
+
+    <div class="rules-block">
+      <div class="rules-h">🎯 Ціль гри</div>
+      <div class="rules-p">Кожна сторона намагається вижити і знищити противника. <b>Мирні жителі</b> хочуть вигнати всіх вовків і тигрів. <b>Вовки і тигри</b> хочуть, щоб їх стало більше ніж мирних. <b>Лис</b> грає сам за себе і намагається вижити, коли всі інші загинуть.</div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">👥 Кількість гравців</div>
+      <div class="rules-p">Від 5 до 20 гравців. Оптимально — 8–14 осіб. Один гравець є <b>ведучим</b> (або обирається роль Слона). Ведучий знає всі ролі й керує грою, але сам не голосує.</div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">🎴 Роздача ролей</div>
+      <div class="rules-p">Телефон передається по колу. Кожен гравець по черзі відкриває свою роль, запам'ятовує її і вводить своє ім'я. <b>Нікому не показуйте свій екран!</b> Після того, як всі прочитали ролі — гра починається.</div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">🗣 Основні правила поведінки</div>
+      <div class="rules-p">
+        • Вночі всі гравці заплющують очі і мовчать<br>
+        • Ведучий будить ролі по черзі — ті відкривають очі і жестами показують свій вибір<br>
+        • Вдень всі обговорюють і намагаються знайти вовків<br>
+        • Забороняється показувати свою картку ролі або фотографувати екран<br>
+        • Мертві гравці <b>не розкривають свою роль</b> і не підказують (якщо ліс так домовився)<br>
+        • Ведучий оголошує результати ночі вранці
+      </div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">🗳 Голосування вдень</div>
+      <div class="rules-p">Після обговорення ліс голосує за підозрюваного. Гравець з більшістю голосів вигоняється. <b>У разі нічиєї</b> — ведучий може провести повторне голосування між тими, хто набрав рівно. Вигнаний гравець <b>відразу розкриває свою роль.</b></div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">👻 Постав своє клеймо</div>
+      <div class="rules-p">Кожен гравець, якого вбили вночі, може поставити <b>своє клеймо</b> на одного живого гравця. Цей гравець наступного дня отримує <b>+0.5 голосу</b> при голосуванні — ведучий враховує це під час підрахунку.</div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">🏆 Умови перемоги</div>
+      <div class="rules-p">
+        🐑 <b>Село перемагає</b> — якщо живих вовків, тигрів і лиса більше немає<br>
+        🐺 <b>Вовки перемагають</b> — якщо їх стало стільки ж або більше ніж мирних<br>
+        🐯 <b>Тигри перемагають</b> — аналогічно вовкам, але окремою зграєю<br>
+        🦊 <b>Лис перемагає</b> — якщо він останній живий гравець
+      </div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">💡 Поради новачкам</div>
+      <div class="rules-p">
+        • Слухайте не лише що кажуть, але й <b>як</b> кажуть<br>
+        • Якщо вас запитують — відповідайте впевнено<br>
+        • Вовки часто надто активно голосують за мирних<br>
+        • Звертайте увагу на тих, хто мовчить або уникає погляду<br>
+        • Пес і Кіт не розкривають себе без крайньої потреби<br>
+        • Якщо вас підозрюють — захищайтеся логікою, не емоціями
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB: PHASES -->
+  <div id="tab-phases" style="display:none">
+
+    <div class="rules-block" style="border-color:rgba(100,80,200,.35);background:rgba(2,4,20,.7)">
+      <div class="rules-h" style="color:#b090ff">🌙 НІЧ</div>
+      <div class="rules-p">Всі заплющують очі. Ведучий по черзі будить кожну роль:<br><br>
+        <b>1. 🐺 Вовки</b> — прокидаються, бачать одне одного, жестами обирають жертву<br>
+        <b>2. 🐯 Тигри</b> — те саме, але окремою зграєю<br>
+        <b>3. 🐱 Кіт</b> — показує пальцем кого рятує (або хитає головою — нікого)<br>
+        <b>4. 🐕 Пес</b> — показує на гравця, ведучий киває/хитає головою<br>
+        <b>5. 🐻 Ведмідь</b> — показує на гравця (блок діє наступний день і ніч)<br>
+        <b>6. 🦊 Лис</b> — показує свою жертву<br>
+        <b>7. 🦝 Єнот</b> — якщо хоче вкрасти роль, показує пальцем на загиблого<br><br>
+        Після всіх — ведучий просить усіх розплющити очі.
+      </div>
+    </div>
+
+    <div class="rules-block" style="border-color:rgba(200,130,50,.35);background:rgba(30,12,4,.7)">
+      <div class="rules-h" style="color:#ffb347">🌅 РАНОК</div>
+      <div class="rules-p">Ведучий оголошує що сталось вночі:<br><br>
+        • Хто загинув (якщо є) — гравець перевертає свою уявну картку<br>
+        • Якщо нікого не вбили — "Тиха ніч"<br>
+        • Мертвий гравець може поставити клеймо духа 👻<br>
+        • Якщо Єнот вкрав роль — йому таємно показують новий екран з роллю<br>
+        • Пес дізнається результат перевірки (тільки йому, не вголос)
+      </div>
+    </div>
+
+    <div class="rules-block" style="border-color:rgba(50,160,120,.35);background:rgba(4,20,16,.7)">
+      <div class="rules-h" style="color:#7ce8c0">☀️ ДЕНЬ</div>
+      <div class="rules-p">Відкрите обговорення. Кожен може говорити що хоче. Блеф дозволено!<br><br>
+        <b>Хід обговорення:</b><br>
+        • Гравці висловлюють підозри<br>
+        • Можна виставляти обвинувачення<br>
+        • Якщо активовано — йде таймер обговорення<br>
+        • Після обговорення — відкрите голосування<br><br>
+        <b>Голосування:</b><br>
+        • Кожен піднімає руку за того, кого хоче вигнати<br>
+        • Гравець з найбільшою кількістю голосів вигоняється<br>
+        • Якщо вигнали Горилу — вона може забрати когось з собою<br>
+        • Якщо Лева вигнали — він покидає гру мовчки (не розкриває роль)
+      </div>
+    </div>
+
+    <div class="rules-block">
+      <div class="rules-h">🔄 Цикл гри</div>
+      <div class="rules-p">Ніч → Ранок → День → Ніч → ... — і так до перемоги однієї зі сторін. Ведучий слідкує за ролями через спеціальну панель в додатку.</div>
+    </div>
+
+  </div>
+
+  <!-- TAB: ROLES -->
+  <div id="tab-roles" style="display:none">
+    <div id="rules-list"></div>
+  </div>
+
+  <button class="btn bb" onclick="goTo('screen-home')">← Назад</button>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="screen-setup">
+  <div class="hs"></div>
+  <div class="ttl" style="font-size:20px">Налаштування гри</div>
+  <div class="sub">склад · таймер</div>
+  <div style="height:16px"></div>
+  <div class="trow">
+    <span class="tlbl">🕐 Таймер обговорення</span>
+    <label class="tsw">
+      <input type="checkbox" id="tmr-tog" onchange="onTmrToggle()">
+      <div class="ttr"></div><div class="tkn"></div>
+    </label>
+  </div>
+  <div id="tmr-set" style="display:none;margin-bottom:4px">
+    <div class="tmrset">
+      <span class="tmrsetlbl">Тривалість обговорення</span>
+      <button class="cbtn" onclick="chTmrMin(-1)">−</button>
+      <span class="cnum" id="tmr-min-disp" style="font-size:28px;min-width:36px;text-align:center">3</span>
+      <button class="cbtn" onclick="chTmrMin(+1)">+</button>
+      <span style="font-family:'Cinzel',serif;font-size:13px;color:var(--silver)">хв</span>
+    </div>
+  </div>
+  <div style="margin-top:6px">
+    <div class="slbl">Склад гравців <span style="font-size:10px;letter-spacing:1px;color:var(--text-dim)">(натисни на роль для опису)</span></div>
+    <div id="roster-list"></div>
+    <div class="rtotal" id="rtotal"></div>
+  </div>
+  <button class="btn bg" id="start-btn" onclick="startGame()">Роздати ролі 🌙</button>
+  <button class="btn bb" onclick="goTo('screen-home')">← Назад</button>
+</div>
+
+<!-- COVER -->
+<div class="screen" id="screen-cover">
+  <div class="covi" id="covi">
+    <div class="covmoon">🌑</div>
+    <div class="covlbl">Передайте телефон гравцю</div>
+    <div class="covpl" id="cov-pl"></div>
+    <div class="covtap">торкніться, щоб відкрити роль</div>
+  </div>
+</div>
+
+<!-- REVEAL -->
+<div class="screen" id="screen-reveal">
+  <div style="height:48px"></div>
+  <div class="pbar"><div class="pfill" id="pfill"></div></div>
+  <div id="rev-card"></div>
+  <div id="rev-abl"></div>
+  <div class="slbl" id="name-label">Як вас звати?</div>
+  <input class="ninp" id="ninp" type="text" placeholder="Введіть ваше ім'я..." autocomplete="off">
+  <button class="btn bg" id="elephant-confirm" style="display:none" onclick="confirmElephant()">Далі →</button>
+  <button class="btn bg" id="name-confirm" onclick="confirmName()">Підтвердити ✓</button>
+  <div style="text-align:center;font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--silver);opacity:.38;margin-top:3px">НІКОМУ НЕ ПОКАЗУЙТЕ ЕКРАН</div>
+  <div style="height:28px"></div>
+</div>
+
+<!-- HANDOFF TO HOST -->
+<div class="screen" id="screen-handoff">
+  <div style="background:#020810;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;cursor:pointer" onclick="goTo('screen-gs')">
+    <div class="crown-ico" style="font-size:88px;margin-bottom:28px;filter:drop-shadow(0 0 30px rgba(201,168,76,.5))">👑</div>
+    <div style="font-family:'Cinzel',serif;font-size:13px;letter-spacing:3px;color:var(--silver);margin-bottom:10px">РОЗДАЧА ЗАВЕРШЕНА</div>
+    <div style="font-family:'Cinzel',serif;font-size:24px;color:var(--gold);margin-bottom:6px">Передайте телефон</div>
+    <div style="font-family:'Cinzel',serif;font-size:24px;color:var(--gold);margin-bottom:32px">ведучому</div>
+    <div style="font-size:14px;color:rgba(212,232,255,.6);line-height:1.7;max-width:300px;margin-bottom:40px">Всі ролі роздані. Тільки ведучий бачить наступний екран зі списком гравців і може розпочати гру.</div>
+    <div style="font-size:13px;color:var(--silver);letter-spacing:2px;animation:pulse 2s ease-in-out infinite">торкніться щоб продовжити</div>
+  </div>
+</div>
+
+
+<!-- GAME START -->
+<div class="screen" id="screen-gs">
+  <div class="hs"></div>
+  <div class="ttl" style="font-size:21px">Гра починається!</div>
+  <div class="sub">Всі ролі роздано</div>
+  <div style="height:16px"></div>
+  <div class="plist" id="gs-players"></div>
+  <div class="ibox" id="gs-info"></div>
+  <button class="btn bg" onclick="startNight()">🌙 Перша ніч</button>
+</div>
+
+<!-- NIGHT -->
+<div class="screen" id="screen-night">
+  <div style="height:68px"></div>
+  <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px">
+    <span style="font-size:25px">🌙</span>
+    <div>
+      <div style="font-family:'Cinzel',serif;font-size:20px;color:#b090ff" id="night-ttl">НІЧ 1</div>
+      <div class="sub" style="text-align:left;margin:0;font-size:10px">ДІЇ ВЕДУЧОГО</div>
+    </div>
+  </div>
+  <div id="night-secs"></div>
+  <button class="btn bg" onclick="resolveNight()">Ранок ☀️</button>
+  <div style="height:28px"></div>
+</div>
+
+<!-- RACCOON REVEAL -->
+<div id="raccoon-reveal" onclick="closeRaccoonReveal()">
+  <div style="font-size:80px;margin-bottom:20px;filter:drop-shadow(0 0 28px rgba(129,140,248,.65))">🦝</div>
+  <div style="font-family:'Cinzel',serif;font-size:16px;letter-spacing:3px;color:#818cf8;margin-bottom:6px">ЄНОТ КРАДЕ РОЛЬ</div>
+  <div style="font-family:'Cinzel',serif;font-size:12px;color:var(--silver);margin-bottom:26px">Показати тільки Єноту</div>
+  <div id="raccoon-role-card" style="width:100%;max-width:340px"></div>
+  <div style="margin-top:26px;font-size:13px;color:var(--silver);letter-spacing:2px;animation:pulse 2s ease-in-out infinite">торкніться щоб закрити</div>
+</div>
+
+<!-- MORNING -->
+<div class="screen" id="screen-morning">
+  <div style="height:68px"></div>
+
+  <!-- Morning sky art -->
+  <div style="text-align:center;margin-bottom:6px">
+    <span style="font-size:56px;filter:drop-shadow(0 0 32px rgba(255,170,40,.75))">🌅</span>
+  </div>
+  <div style="font-family:'Cinzel',serif;font-size:24px;font-weight:900;text-align:center;background:linear-gradient(135deg,#ffe8a0,#ffb347,#e8680a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px rgba(255,150,40,.4))">РАНОК</div>
+  <div style="font-family:'Cinzel',serif;font-size:11px;letter-spacing:4px;color:#c8903a;text-align:center;margin-top:4px;margin-bottom:22px">ЩО СТАЛОСЬ ВНОЧІ</div>
+
+  <div id="mrn-events"></div>
+  <div id="mrn-alive"></div>
+  <div id="mrn-dog"></div>
+  <button class="btn bg" id="mrn-btn" onclick="startDay()">☀️ Почати день</button>
+  <div style="height:28px"></div>
+</div>
+
+<!-- DAY -->
+<div class="screen" id="screen-day">
+  <div style="height:68px"></div>
+
+  <!-- Day header with sun -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:28px;filter:drop-shadow(0 0 10px rgba(255,220,0,.5))">☀️</span>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:21px;color:#7ce8c0" id="day-ttl">ДЕНЬ 1</div>
+        <div class="sub" style="text-align:left;margin:0;font-size:10px;color:#4ab890">ГОЛОСУВАННЯ</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tmr-panel" style="display:none;margin-bottom:13px">
+    <div class="tmrbox">
+      <div class="tmrdisp" id="tmr-disp">03:00</div>
+      <div class="tmrctrl">
+        <button class="btn bb bsm" style="flex:1" onclick="startTmr()">▶ Старт</button>
+        <button class="btn bb bsm" style="flex:1" onclick="pauseTmr()">⏸ Пауза</button>
+        <button class="btn bb bsm" style="flex:1" onclick="resetTmr()">↺ Скинути</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="drp" id="day-roles"></div>
+  <div class="ibox">Гравці обговорюють і голосують. Оберіть кого вигнали:</div>
+  <div class="nsec">
+    <div class="nshdr"><span class="nsico">🗳</span><span class="nstit" style="color:#7ce8c0">Кого вигнали з лісу?</span></div>
+    <div id="day-picker"></div>
+  </div>
+  <div id="gor-warn" style="display:none;margin-bottom:11px" class="evc ev-info">
+    <span class="evico">🦍</span>
+    <div><div class="evtit" style="color:var(--teal)">ГОРИЛА!</div><div class="evdsc">Горила може забрати когось з собою після вигнання!</div></div>
+  </div>
+  <button class="btn bg" onclick="resolveDay()">Завершити день →</button>
+  <div style="height:28px"></div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="screen-go">
+  <div class="hs"></div>
+  <div style="text-align:center;font-size:74px;filter:drop-shadow(0 0 28px rgba(201,168,76,.6));margin-bottom:16px">🏆</div>
+  <div class="wintxt" id="win-txt"></div>
+  <div id="go-stats" style="text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--silver);margin:7px 0 20px"></div>
+  <div class="slbl">Фінальний склад</div>
+  <div class="plist" id="go-players"></div>
+  <div id="go-hist"></div>
+  <button class="btn bg" onclick="newGame()">Нова гра 🐺</button>
+  <div style="height:38px"></div>
+</div>
+</div><!-- #app -->
+
+<!-- RACCOON BLOCKED OVERLAY -->
+<div id="raccoon-blocked" style="display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#04020f,#080418,#0a0520);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 24px;cursor:pointer" onclick="closeRaccoonBlocked()">
+  <div style="font-size:80px;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(224,85,85,.5))">🚫🦝</div>
+  <div style="font-family:'Cinzel',serif;font-size:18px;letter-spacing:2px;color:#e05555;margin-bottom:14px">ЄНОТ ЗАБЛОКОВАНИЙ</div>
+  <div style="font-size:15px;color:rgba(212,232,255,.75);line-height:1.7;max-width:300px;margin-bottom:28px">Ведмідь заблокував тебе цієї ночі.<br>Ти не можеш вкрасти роль.<br>Спробуй наступного разу.</div>
+  <div style="font-size:13px;color:var(--silver);letter-spacing:2px;animation:pulse 2s ease-in-out infinite">торкніться щоб закрити</div>
+</div>
+
+<!-- STAMP OVERLAY (ghost marks someone) -->
+<div id="stamp-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);overflow-y:auto">
+  <div style="max-width:430px;margin:0 auto;padding:30px 22px;text-align:center">
+    <div class="ghost-icon" style="font-size:70px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(168,85,247,.5))">👻</div>
+    <div style="font-family:'Cinzel',serif;font-size:18px;letter-spacing:2px;color:#c084fc;margin-bottom:8px">ПОСТАВ СВОЄ КЛЕЙМО</div>
+    <div id="stamp-killer-name" style="font-family:'Cinzel',serif;font-size:14px;color:var(--silver);margin-bottom:18px"></div>
+    <div style="font-size:14px;color:rgba(212,232,255,.75);line-height:1.65;margin-bottom:22px">Тебе вбили вночі, але ти можеш поставити своє клеймо на одного живого гравця.<br><br>На наступний ігровий день той гравець отримає <b style="color:#c084fc">+0.5 голосу</b> при голосуванні.</div>
+    <div id="stamp-picker" style="text-align:left;margin-bottom:16px"></div>
+    <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#e9d5ff;font-family:'Cinzel',serif;letter-spacing:2px" onclick="confirmStamp()">ПОСТАВИТИ КЛЕЙМО 👻</button>
+    <button class="btn bb" onclick="skipStamp()" style="margin-top:0">Пропустити</button>
+  </div>
+</div>
+<div id="gov">
+  <div class="gomod">
+    <div style="font-size:64px;margin-bottom:13px;filter:drop-shadow(0 0 20px rgba(45,212,191,.55))">🦍</div>
+    <div style="font-family:'Cinzel',serif;font-size:21px;color:var(--teal);margin-bottom:7px">ПОМСТА ГОРИЛИ</div>
+    <div style="font-size:14px;font-style:italic;color:var(--text-dim);margin-bottom:16px;line-height:1.6">Горила вигнана, але встигає<br>забрати когось з собою...</div>
+    <div id="gor-picker"></div>
+    <div style="height:9px"></div>
+    <button class="btn bt" onclick="resolveGorilla()">Підтвердити 💀</button>
+  </div>
+</div>
+
+<script>
+// ─── CANVAS STARS/PARTICLES ───
+const cnv=document.getElementById('bgc'),cx=cnv.getContext('2d');
+let particles=[];
+let currentPhase='home';
+
+function initC(){
+  cnv.width=cnv.offsetWidth;cnv.height=window.innerHeight;
+  particles=Array.from({length:60},()=>mkParticle());
+}
+function mkParticle(){
+  return{x:Math.random(),y:Math.random()*(currentPhase==='night'||currentPhase==='home'?.55:.35),s:Math.random()*2.2+.4,d:Math.random()*3+1.5,t:Math.random()*Math.PI*2};
+}
+function drawParticles(){
+  cx.clearRect(0,0,cnv.width,cnv.height);
+  const isNight=currentPhase==='night'||currentPhase==='home';
+  const isMorning=currentPhase==='morning';
+  particles.forEach(p=>{
+    p.t+=.016/p.d;
+    const o=.18+Math.sin(p.t)*.35+.25;
+    cx.beginPath();cx.arc(p.x*cnv.width,p.y*cnv.height,p.s,0,Math.PI*2);
+    if(isNight) cx.fillStyle=`rgba(180,210,255,${Math.max(0,Math.min(1,o))})`;
+    else if(isMorning) cx.fillStyle=`rgba(255,220,160,${Math.max(0,Math.min(1,o*.6))})`;
+    else cx.fillStyle=`rgba(180,230,220,${Math.max(0,Math.min(1,o*.4))})`;
+    cx.fill();
+  });
+  requestAnimationFrame(drawParticles);
+}
+initC();window.addEventListener('resize',initC);requestAnimationFrame(drawParticles);
+
+function setPhase(ph){
+  currentPhase=ph;
+  const app=document.getElementById('app');
+  app.className='phase-'+ph;
+  // Remove old overlays
+  document.querySelectorAll('.night-fog,.morning-rays').forEach(el=>el.remove());
+  // Add phase-specific overlays
+  if(ph==='night'||ph==='home'){
+    const fog=document.createElement('div');fog.className='night-fog';app.prepend(fog);
+  }
+  if(ph==='morning'){
+    const rays=document.createElement('div');rays.className='morning-rays';app.prepend(rays);
+  }
+}
+
+// ─── ROLES ───
+const ROLES=[
+  {id:'wolf',nm:'ВОВК',ico:'🐺',sh:'Мафія. Вбиває вночі.',
+   abl:['🌙 Щоночі разом з іншими вовками обирай жертву','👥 Знаєш хто ще є вовком','😶 Вдень прикидайся мирним','🏆 Мета: щоб вовків було стільки ж, або більше ніж інших'],
+   team:'wolves',tl:'ЗГРАЯ ВОВКІВ',tc:'#e05555',bg:'linear-gradient(150deg,#1a0505,#3a0f0f)',ac:'#e05555',mn:0,mx:8,sp:false},
+  {id:'tiger',nm:'ТИГР',ico:'🐯',sh:'Друга банда. Своя зграя, свої жертви.',
+   abl:['🌙 Щоночі тигри вбивають власну жертву','👥 Знаєш хто ще є тигром','⚔️ Ворогують з вовками, лисом та селом','🏆 Мета: щоб тигрів було стільки ж, або більше ніж інших'],
+   team:'tigers',tl:'ЗГРАЯ ТИГРІВ',tc:'#f97316',bg:'linear-gradient(150deg,#1a0a00,#3a1500)',ac:'#f97316',mn:0,mx:6,sp:false},
+  {id:'cat',nm:'КІТ',ico:'🐱',sh:'Лікар. Рятує від смерті вночі.',
+   abl:['💊 Щоночі обери гравця для порятунку','🛡 Атакованого рятує від смерті','🔄 Не може рятувати себе дві ночі поспіль','🏆 Мета: захищати село'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#080a20,#10143a)',ac:'#93c5fd',mn:0,mx:10,sp:false},
+  {id:'dog',nm:'ПЕС',ico:'🐕',sh:'Поліцейський. Шукає поганців вночі.',
+   abl:['🔍 Щоночі шукай поганців','🦊 Не можеш знайти слід Лиса','📢 Діліся інформацією обережно','🏆 Мета: знайти і викрити ворогів'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#181005,#2c200a)',ac:'#fbbf24',mn:0,mx:10,sp:false},
+  {id:'bear',nm:'ВЕДМІДЬ',ico:'🐻',sh:'Блокер. Блокує здатність на наступний день і ніч.',
+   abl:['🚫 Щоночі заблокуй здатність одного гравця','⏳ Блок діє на наступний день і наступну ніч','❌ Не може блокувати сам себе','🏆 Мета: захищати село'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#120e02,#201808)',ac:'#d97706',mn:0,mx:1,sp:false},
+  {id:'lion',nm:'ЛЕВ',ico:'🦁',sh:'Невразливий вночі. Тільки голосування.',
+   abl:['🛡 Тебе неможливо вбити вночі','🗳 Тебе можна вигнати ТІЛЬКИ денним голосуванням','👑 Граєш на боці села','🏆 Мета: допомогти селу вижити'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#1a1200,#352600)',ac:'#fbbf24',mn:0,mx:1,sp:true},
+  {id:'fox',nm:'ЛИС',ico:'🦊',sh:'Маньяк. Грає сам за себе.',
+   abl:['🕵️ Пес не може знайти твій слід','🌙 Можеш вбивати вночі самостійно','🎭 Повністю незалежний','🏆 Мета: вижити, коли всі загинуть'],
+   team:'alone',tl:'ОДИНАК',tc:'#a855f7',bg:'linear-gradient(150deg,#180a02,#2e1405)',ac:'#fb923c',mn:0,mx:1,sp:true},
+  {id:'gorilla',nm:'ГОРИЛА',ico:'🦍',sh:'Забирає когось при вигнанні.',
+   abl:['🦍 Якщо тебе вигнали вдень, то ти можеш забрати з собою одного гравця. Помста відбувається одразу після вироку.','🛡 Ведмідь не може заблокувати цю здатність — вона діє завжди','🏆 Мета: захистити село ціною помсти'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#051010,#0a1e1e)',ac:'#2dd4bf',mn:0,mx:1,sp:true},
+  {id:'raccoon',nm:'ЄНОТ',ico:'🦝',sh:'Крадій ролі. Один раз за гру.',
+   abl:['🎭 Спочатку ти — мирний житель','💀 Вночі можеш один раз вибрати роль когось із загиблих','🤫 Ліс не знає чию роль ти взяв','🏆 Мета: пережити всіх з новою роллю'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#0a0a18,#151525)',ac:'#818cf8',mn:0,mx:1,sp:true},
+  {id:'sheep',nm:'ВІВЦЯ',ico:'🐑',sh:'Мирний житель. Немає здатностей.',
+   abl:['☀️ Вдень голосуй за підозрюваного','👁 Спостерігай за поведінкою','🗣 Переконуй інших','🏆 Мета: вигнати всіх ворогів'],
+   team:'village',tl:'МИРНЕ СЕЛО',tc:'#4ade80',bg:'linear-gradient(150deg,#0a1a0a,#122512)',ac:'#4ade80',mn:0,mx:12,sp:false},
+  {id:'elephant',nm:'СЛОН',ico:'🐘',sh:'Ведучий. Обирається рандомно.',
+   abl:['🎙 Ти — ведучий гри (якщо ніхто не хотів)','📋 Знаєш ролі всіх гравців','🎲 Обраний грою випадково','🏆 Твоя мета — чесно вести гру'],
+   team:'host',tl:'ВЕДУЧИЙ',tc:'#94a3b8',bg:'linear-gradient(150deg,#0a0e18,#121826)',ac:'#94a3b8',mn:0,mx:1,sp:true},
+];
+const rById=id=>ROLES.find(r=>r.id===id);
+
+// ─── STATE ───
+let roster={};
+let tmrEnabled=false,tmrMinutes=3,tmrInterval=null,tmrSeconds=0,tmrRunning=false;
+let G={
+  playerCount:8,assignedRoles:[],players:[],currentIdx:0,
+  round:1,history:[],nightEvents:[],
+  wolfVictim:null,tigerVictim:null,catSaved:null,
+  // FIX 1: bear blocks the NEXT day+night, not the current one
+  bearPendingBlock:null,  // set this night, applied next day
+  bearBlocked:null,       // currently blocked (was set previous night)
+  foxVictim:null,dogChecked:null,dogResult:null,
+  dayExpelled:null,gorillaVictim:null,
+  raccoonVictim:null,raccoonUsed:false,
+  catSavedSelfLastNight:false,
+  nightStamp:null,        // {from: player, on: player} — ghost mark from killed player
+  dayStamps:[],           // [{on: player, bonus: 0.5}] — active day stamps
+  foxBlockedThisNight:false, // fox was blocked this night → dog sees as wolf
+};
+
+// ─── UTILS ───
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('app').scrollTop=0;window.scrollTo(0,0);
+}
+function alive(){return G.players.filter(p=>p.alive&&!p.isHost);}
+function dead(){return G.players.filter(p=>!p.alive&&!p.isHost);}
+function hasR(id){return alive().some(p=>p.role.id===id);}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function isBlk(p){return G.bearBlocked&&G.bearBlocked===p;}
+
+// ─── RULES ───
+function renderRules(){
+  document.getElementById('rules-list').innerHTML=ROLES.map(r=>`
+    <div style="border-radius:12px;padding:13px;margin-bottom:8px;background:${r.bg};border:1px solid ${r.ac}30">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+        <span style="font-size:26px;flex-shrink:0">${r.ico}</span>
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:${r.ac}">${r.nm}${r.sp?' <span style="font-size:10px;color:var(--silver);font-style:italic">особлива</span>':''}</div>
+          <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px">${r.sh}</div>
+          <span class="tbadge" style="background:${r.tc}18;color:${r.tc};border:1px solid ${r.tc}40">${r.tl}</span>
+        </div>
+      </div>
+      <ul style="font-size:13px;color:rgba(212,232,255,.8);line-height:1.6;list-style:none">${r.abl.map(a=>`<li>${a}</li>`).join('')}</ul>
+    </div>`).join('');
+}
+
+// ─── HOME ───
+function chCnt(d){G.playerCount=Math.max(5,Math.min(20,G.playerCount+d));document.getElementById('cnt-disp').textContent=G.playerCount;}
+
+// ─── SETUP ───
+function goSetup(){
+  setPhase('home');
+  initRoster(G.playerCount);renderRoster();goTo('screen-setup');
+}
+function initRoster(n){
+  roster={};ROLES.forEach(r=>roster[r.id]=0);
+  const wolves=Math.max(1,Math.floor(n/4));roster['wolf']=wolves;
+  let left=n-wolves;
+  if(left>0){roster['cat']=1;left--;}
+  if(left>0){roster['dog']=1;left--;}
+  if(left>0){roster['fox']=1;left--;}
+  if(left>0){roster['lion']=1;left--;}
+  if(left>0){roster['gorilla']=1;left--;}
+  if(left>0){roster['bear']=1;left--;}
+  if(left>0&&n>=10){roster['raccoon']=1;left--;}
+  if(left>0&&n>=12){const ex=Math.min(left,Math.floor(left/2));roster['wolf']+=ex;left-=ex;}
+  roster['sheep']=Math.max(0,left);
+}
+function rTotal(){return Object.values(roster).reduce((a,b)=>a+b,0);}
+function renderRoster(){
+  const tot=rTotal(),n=G.playerCount,ok=tot===n;
+  document.getElementById('rtotal').innerHTML=`Всього: <span class="${ok?'rok':'rwarn'}">${tot}</span> / ${n} ${ok?'✓':'— не збігається'}`;
+  const sb=document.getElementById('start-btn');sb.disabled=!ok;sb.style.opacity=ok?'1':'0.5';
+  document.getElementById('roster-list').innerHTML=ROLES.map(r=>`
+    <div class="rrow" id="rrow-${r.id}">
+      <span class="ricon" onclick="toggleExpand('${r.id}')">${r.ico}</span>
+      <div style="flex:1;min-width:0" onclick="toggleExpand('${r.id}')">
+        <div class="rname" style="color:${r.ac}">${r.nm} <span style="font-size:10px;color:var(--silver)">▾</span></div>
+        <span class="rteam" style="background:${r.tc}15;color:${r.tc};border:1px solid ${r.tc}35">${r.tl}</span>
+        <div class="role-expand" id="rexp-${r.id}">
+          <ul>${r.abl.map(a=>`<li>${a}</li>`).join('')}</ul>
+        </div>
+      </div>
+      <div class="rctrl">
+        <button class="rbtn" onclick="chRoster('${r.id}',-1)">−</button>
+        <span class="rcnt" id="rcnt-${r.id}">${roster[r.id]||0}</span>
+        <button class="rbtn" onclick="chRoster('${r.id}',+1)">+</button>
+      </div>
+    </div>`).join('');
+}
+function toggleExpand(id){document.getElementById('rexp-'+id).classList.toggle('open');}
+function chRoster(id,d){
+  const r=rById(id);roster[id]=Math.max(r.mn,Math.min(r.mx,(roster[id]||0)+d));
+  const tot=rTotal(),n=G.playerCount,ok=tot===n;
+  document.getElementById('rcnt-'+id).textContent=roster[id];
+  document.getElementById('rtotal').innerHTML=`Всього: <span class="${ok?'rok':'rwarn'}">${tot}</span> / ${n} ${ok?'✓':'— не збігається'}`;
+  const sb=document.getElementById('start-btn');sb.disabled=!ok;sb.style.opacity=ok?'1':'0.5';
+}
+function onTmrToggle(){tmrEnabled=document.getElementById('tmr-tog').checked;document.getElementById('tmr-set').style.display=tmrEnabled?'block':'none';}
+function chTmrMin(d){tmrMinutes=Math.max(1,Math.min(30,tmrMinutes+d));document.getElementById('tmr-min-disp').textContent=tmrMinutes;}
+
+// ─── TIMER ───
+function fmtT(s){const m=Math.floor(s/60),sec=s%60;return`${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+function startTmr(){if(tmrRunning)return;tmrRunning=true;tmrInterval=setInterval(()=>{tmrSeconds--;const el=document.getElementById('tmr-disp');if(!el){clearInterval(tmrInterval);return;}el.textContent=fmtT(Math.max(0,tmrSeconds));el.classList.toggle('urgent',tmrSeconds<=10);if(tmrSeconds<=0){clearInterval(tmrInterval);tmrRunning=false;}},1000);}
+function pauseTmr(){clearInterval(tmrInterval);tmrRunning=false;}
+function resetTmr(){clearInterval(tmrInterval);tmrRunning=false;tmrSeconds=tmrMinutes*60;const el=document.getElementById('tmr-disp');if(el){el.textContent=fmtT(tmrSeconds);el.classList.remove('urgent');}}
+
+// ─── START GAME ───
+function startGame(){
+  if(rTotal()!==G.playerCount)return;
+  let roles=[];ROLES.forEach(r=>{for(let i=0;i<(roster[r.id]||0);i++)roles.push(r);});
+  G.assignedRoles=shuffle(roles);
+  G.players=[];G.currentIdx=0;G.round=1;G.history=[];
+  G.raccoonUsed=false;G.catSavedSelfLastNight=false;
+  G.bearBlocked=null;G.bearPendingBlock=null;
+  G.nightStamp=null;G.dayStamps=[];G.foxBlockedThisNight=false;
+  setPhase('night');
+  showCover();
+}
+
+// ─── REVEAL FLOW ───
+function showCover(){
+  // Check if current role is elephant — show their card but no name needed
+  if(G.currentIdx<G.assignedRoles.length&&G.assignedRoles[G.currentIdx].id==='elephant'){
+    // Show cover addressed to elephant player
+    document.getElementById('cov-pl').textContent=`Гравець ${G.currentIdx+1} (Ведучий)`; 
+    document.getElementById('covi').onclick=showElephantReveal;
+    goTo('screen-cover');
+    return;
+  }
+  if(G.currentIdx>=G.playerCount){
+    renderGSData();
+    goTo('screen-handoff');
+    return;
+  }
+  document.getElementById('cov-pl').textContent=`Гравець ${G.currentIdx+1}`;
+  document.getElementById('covi').onclick=showReveal;
+  goTo('screen-cover');
+}
+
+function showElephantReveal(){
+  document.getElementById('covi').onclick=showReveal; // reset
+  const r=G.assignedRoles[G.currentIdx];
+  document.getElementById('pfill').style.width=(G.currentIdx/G.playerCount*100)+'%';
+  document.getElementById('rev-card').innerHTML=`
+    <div class="rolecard" style="background:${r.bg};border:1px solid ${r.ac}50">
+      <span class="rcico">${r.ico}</span>
+      <div class="rcnm" style="color:${r.ac}">${r.nm}</div>
+      <div class="rcds">${r.sh}</div>
+      <span class="tbadge" style="background:${r.tc}18;color:${r.tc};border:1px solid ${r.tc}45">${r.tl}</span>
+    </div>`;
+  document.getElementById('rev-abl').innerHTML=`
+    <div class="ablbox" style="background:${r.bg};border:1px solid ${r.ac}30;margin-bottom:14px">
+      <div class="slbl" style="margin-bottom:7px">Що я маю зробити</div>
+      <div class="ablrow"><span class="ablemi">📢</span><span class="abltxt"><b>Оголосіть всім, що ви ведучий!</b> Скажіть: "Я ведучий цієї гри"</span></div>
+      <div class="ablrow"><span class="ablemi">📋</span><span class="abltxt">Ви знаєте всі ролі всіх гравців</span></div>
+      <div class="ablrow"><span class="ablemi">🌙</span><span class="abltxt">Вночі — ведіть гру, не голосуйте вдень</span></div>
+      <div class="ablrow"><span class="ablemi">🚫</span><span class="abltxt">Оголошуйте результати нічних дій вранці</span></div>
+    </div>`;
+  // Name input replaced with a simple confirm button — hide name elements
+  document.getElementById('ninp').style.display='none';
+  document.getElementById('name-label').style.display='none';
+  document.getElementById('name-confirm').style.display='none';
+  document.getElementById('elephant-confirm').style.display='block';
+  goTo('screen-reveal');
+}
+
+function confirmElephant(){
+  document.getElementById('ninp').style.display='';
+  document.getElementById('name-label').style.display='';
+  document.getElementById('name-confirm').style.display='';
+  document.getElementById('elephant-confirm').style.display='none';
+  G.players.push({name:'🐘 Ведучий',role:G.assignedRoles[G.currentIdx],alive:false,blocked:false,isHost:true});
+  G.currentIdx++;
+  // skip any more elephants, check end
+  if(G.currentIdx>=G.playerCount){
+    renderGSData();
+    goTo('screen-handoff');
+  } else {
+    showCover();
+  }
+}
+
+function showReveal(){
+  const r=G.assignedRoles[G.currentIdx];
+  document.getElementById('pfill').style.width=(G.currentIdx/G.playerCount*100)+'%';
+  document.getElementById('ninp').value='';
+  document.getElementById('rev-card').innerHTML=`
+    <div class="rolecard" style="background:${r.bg};border:1px solid ${r.ac}50">
+      <span class="rcico">${r.ico}</span>
+      <div class="rcnm" style="color:${r.ac}">${r.nm}</div>
+      <div class="rcds">${r.sh}</div>
+      <span class="tbadge" style="background:${r.tc}18;color:${r.tc};border:1px solid ${r.tc}45">${r.tl}</span>
+    </div>`;
+  document.getElementById('rev-abl').innerHTML=`
+    <div class="ablbox" style="background:${r.bg};border:1px solid ${r.ac}30;margin-bottom:14px">
+      <div class="slbl" style="margin-bottom:7px">Що я можу робити</div>
+      ${r.abl.map(a=>`<div class="ablrow"><span class="ablemi">${a.slice(0,2)}</span><span class="abltxt">${a.slice(2).trim()}</span></div>`).join('')}
+    </div>`;
+  goTo('screen-reveal');
+  setTimeout(()=>document.getElementById('ninp').focus(),300);
+}
+document.getElementById('ninp').addEventListener('keydown',e=>{if(e.key==='Enter')confirmName();});
+function confirmName(){
+  const name=document.getElementById('ninp').value.trim();
+  if(!name){document.getElementById('ninp').style.borderColor='rgba(224,85,85,.6)';return;}
+  document.getElementById('ninp').style.borderColor='';
+  G.players.push({name,role:G.assignedRoles[G.currentIdx],alive:true,blocked:false,isRaccoon:G.assignedRoles[G.currentIdx].id==='raccoon'});
+  G.currentIdx++;
+  showCover();
+}
+function renderGSData(){
+  const rp=G.players.filter(p=>!p.isHost);
+  document.getElementById('gs-players').innerHTML=rp.map((p,i)=>`
+    <div class="prow"><span class="pnum">${i+1}</span><span class="pico">${p.role.ico}</span><span class="pname">${p.name}</span></div>`).join('');
+  document.getElementById('gs-info').innerHTML=G.players.some(p=>p.isHost)
+    ?'🐘 У грі є Слон — він ведучий і знає всі ролі.'
+    :'Ведучий: всі закривають очі. Прокидаються: 🐺 Вовки → 🐯 Тигри → 🐱 Кіт → 🐕 Пес → 🐻 Ведмідь → 🦊 Лис → 🦝 Єнот.';
+}
+function renderGS(){
+  renderGSData();
+  goTo('screen-gs');
+}
+
+// ─── NIGHT ───
+function startNight(){
+  clearInterval(tmrInterval);tmrRunning=false;
+  setPhase('night');
+
+  // FIX 1: Apply bear's block from previous night NOW (next day+night cycle)
+  // bearPendingBlock was set last night → becomes bearBlocked for this night+day
+  G.bearBlocked=G.bearPendingBlock;
+  G.bearPendingBlock=null;
+  G._blockedPlayerName=G.bearBlocked?G.bearBlocked.name:null;
+  G.players.forEach(p=>p.blocked=false);
+  if(G.bearBlocked) G.bearBlocked.blocked=true;
+
+  G.wolfVictim=null;G.tigerVictim=null;G.catSaved=null;
+  G.foxVictim=null;G.dogChecked=null;G.dogResult=null;
+  G.catChoices={};G.dogChoices={};G.dogResults={};G._dogResultsForMorning=[];
+  G.nightEvents=[];G.raccoonVictim=null;
+
+  document.getElementById('night-ttl').textContent=`НІЧ ${G.round}`;
+  const al=alive();let html='';
+
+  html+=bldSec('🐺','Вовки вибирають жертву','#b090ff',
+    al.filter(p=>p.role.id!=='wolf'),'wolfVictim','Ніхто не вбитий');
+  if(hasR('tiger'))
+    html+=bldSec('🐯','Тигри вибирають жертву','#f97316',
+      al.filter(p=>p.role.id!=='tiger'),'tigerVictim','Тигри нікого не вбили');
+
+  // Multiple cats — one section per cat
+  const cats=al.filter(p=>p.role.id==='cat');
+  cats.forEach((cat,i)=>{
+    const catIdx=G.players.indexOf(cat);
+    const blocked=isBlk(cat);
+    const noSelf=G.catSavedSelfLastNight?al.filter(p=>p!==cat):al;
+    const title=cats.length>1
+      ?`🐱 Кіт ${i+1}: ${cat.name}${blocked?' 🚫 заблокований':''}`
+      :`Кіт рятує гравця${blocked?' 🚫 заблокований':''}`;
+    html+=bldSecKeyed('🐱',title,'#93c5fd',noSelf,`cat_${catIdx}`,'Кіт нікого не рятує');
+  });
+
+  if(hasR('bear')){
+    const bp=al.find(p=>p.role.id==='bear');
+    html+=bldSec('🐻','Ведмідь блокує (на НАСТУПНИЙ день/ніч)','#d97706',
+      al.filter(p=>p!==bp),'bearPendingBlock','Ведмідь нікого не блокує');
+  }
+  if(hasR('fox'))
+    html+=bldSec('🦊','Лис вибирає жертву','#fb923c',
+      al.filter(p=>p.role.id!=='fox'),'foxVictim','Лис нікого не вбиває');
+
+  // Multiple dogs — one section per dog
+  const dogs=al.filter(p=>p.role.id==='dog');
+  dogs.forEach((dog,i)=>{
+    const dogIdx=G.players.indexOf(dog);
+    const blocked=isBlk(dog);
+    const title=dogs.length>1
+      ?`🐕 Пес ${i+1}: ${dog.name}${blocked?' 🚫 заблокований':''}`
+      :`Пес перевіряє гравця${blocked?' 🚫 заблокований':''}`;
+    html+=bldSecKeyed('🐕',title,'#fbbf24',
+      al.filter(p=>p!==dog),`dog_${dogIdx}`,'Пес нікого не перевіряє');
+  });
+
+  // FIX 3: Raccoon — show only NAMES of dead, no roles
+  const raccoon=al.find(p=>p.isRaccoon);
+  const deadOnes=dead();
+  if(raccoon&&!G.raccoonUsed&&deadOnes.length>0)
+    html+=bldRaccoonSec(deadOnes);
+
+  document.getElementById('night-secs').innerHTML=html;
+
+  document.querySelectorAll('.pkrow').forEach(row=>{
+    row.addEventListener('click',()=>{
+      const key=row.dataset.key,idx=row.dataset.idx;
+      if(!key)return;
+      row.closest('.nsec').querySelectorAll('.pkrow').forEach(r=>{r.classList.remove('sel');r.querySelector('.pkck').textContent='';r.style.animation='';});
+      row.classList.add('sel');row.querySelector('.pkck').textContent='✓';
+      row.style.animation='none';row.offsetHeight;row.style.animation='selPulse .25s ease both';
+      const val=idx==='null'?null:G.players[parseInt(idx)];
+      // Dynamic keys for cat_N and dog_N
+      if(key.startsWith('cat_')){
+        const catIdx=parseInt(key.split('_')[1]);
+        G.catChoices[catIdx]=val;
+      } else if(key.startsWith('dog_')){
+        const dogIdx=parseInt(key.split('_')[1]);
+        G.dogChoices[dogIdx]=val;
+      } else {
+        G[key]=val;
+      }
+    });
+  });
+  goTo('screen-night');
+}
+
+function bldSec(ico,tit,col,players,key,none){
+  return bldSecKeyed(ico,tit,col,players,key,none);
+}
+function bldSecKeyed(ico,tit,col,players,key,none){
+  return`<div class="nsec"><div class="nshdr"><span class="nsico">${ico}</span><span class="nstit" style="color:${col}">${tit}</span></div>
+    <div class="pkrow sel" data-key="${key}" data-idx="null"><span class="pkico">—</span><span class="pknm" style="color:var(--text-dim)">${none}</span><span class="pkck">✓</span></div>
+    ${players.map(p=>{const i=G.players.indexOf(p);return`<div class="pkrow" data-key="${key}" data-idx="${i}"><span class="pkico">${p.role.ico}</span><span class="pknm">${p.name}</span><span class="pkck"></span></div>`;}).join('')}
+  </div>`;
+}
+
+// FIX 3: Raccoon sees only names, no icons/roles
+function bldRaccoonSec(deadPlayers){
+  const rows=deadPlayers.map((p,i)=>{
+    const gi=G.players.indexOf(p);
+    return`<div class="pkrow" data-key="raccoonVictim" data-idx="${gi}">
+      <span class="pkico">💀</span>
+      <span class="pknm">${p.name}</span>
+      <span class="pkck"></span>
+    </div>`;
+  }).join('');
+  return`<div class="nsec" style="border-color:rgba(129,140,248,.4);background:rgba(5,4,25,.75)">
+    <div class="nshdr"><span class="nsico">🦝</span><span class="nstit" style="color:#818cf8">Єнот краде роль (один раз за гру)</span></div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;line-height:1.5">Ведучий бачить тільки імена. Ролі не показуються. Єнот обирає:</div>
+    <div class="pkrow sel" data-key="raccoonVictim" data-idx="null"><span class="pkico">—</span><span class="pknm" style="color:var(--text-dim)">Єнот не використовує здатність</span><span class="pkck">✓</span></div>
+    ${rows}
+  </div>`;
+}
+
+// ─── RESOLVE NIGHT ───
+function resolveNight(){
+  const ev=[];
+
+  const foxPlayer=alive().find(p=>p.role.id==='fox');
+  const foxIsBlocked=isBlk(foxPlayer);
+  G.foxBlockedThisNight=foxIsBlocked;
+  const raccoonPlayer=alive().find(p=>p.isRaccoon||p.role.id==='raccoon');
+  const raccoonIsBlocked=isBlk(raccoonPlayer);
+
+  const wolfPlayers=alive().filter(p=>p.role.id==='wolf');
+  const wolvesBlk=wolfPlayers.length>0&&wolfPlayers.every(w=>isBlk(w));
+  const tigerPlayers=alive().filter(p=>p.role.id==='tiger');
+  const tigersBlk=tigerPlayers.length>0&&tigerPlayers.every(t=>isBlk(t));
+
+  // Build merged "catSaved" — any cat (non-blocked) that chose this victim
+  // A victim is saved if ANY non-blocked cat picked them
+  const catSavedTargets=new Set();
+  Object.entries(G.catChoices||{}).forEach(([catIdxStr,target])=>{
+    if(!target) return;
+    const cat=G.players[parseInt(catIdxStr)];
+    if(cat&&!isBlk(cat)) catSavedTargets.add(target);
+  });
+  const isCatSaved=v=>catSavedTargets.has(v);
+
+  if(G.bearBlocked)
+    ev.push({t:'blocked',i:'🚫',tit:'Заблоковано',d:`${G.bearBlocked.name} не може використовувати свою здатність цього дня і ночі`});
+  if(G.bearPendingBlock)
+    ev.push({t:'info',i:'⏳',tit:'Тільки для ведучого',d:`${G.bearPendingBlock.name} буде заблоковано з наступної ночі`});
+
+  // ── Wolf kill ──
+  if(G.wolfVictim){
+    const v=G.wolfVictim;
+    if(wolvesBlk){
+      ev.push({t:'saved',i:'🌙',tit:'Тиха ніч',d:'Цієї ночі ніхто не загинув'});
+    } else if(wolvesBlk){
+      ev.push({t:'saved',i:'🌙',tit:'Тиха ніч',d:'Цієї ночі ніхто не загинув'});
+    } else if(isCatSaved(v)){
+      ev.push({t:'saved',i:'✨',tit:'Врятовано!',d:`${v.name} вижив — хтось захистив його цієї ночі`});
+    } else if(v.role.id==='lion'&&!isBlk(v)){
+      ev.push({t:'saved',i:'✨',tit:'Захищений',d:`${v.name} не постраждав цієї ночі`});
+    } else {
+      v.alive=false;
+      ev.push({t:'death',i:'💀',tit:'Загинув',d:`${v.name} не прокинувся цього ранку`});
+    }
+  } else {
+    ev.push({t:'saved',i:'🌙',tit:'Тиха ніч',d:'Цієї ночі ніхто не загинув'});
+  }
+
+  // ── Tiger kill ──
+  if(G.tigerVictim){
+    const v=G.tigerVictim;
+    if(tigersBlk){
+      // silent — tigers blocked, already covered by "тиха ніч" above or add nothing
+    } else if(isCatSaved(v)){
+      // only add save msg if not already saved by wolf check
+      if(!ev.some(e=>e.t==='saved'&&e.d.includes(v.name)))
+        ev.push({t:'saved',i:'✨',tit:'Врятовано!',d:`${v.name} вижив — хтось захистив його цієї ночі`});
+    } else if(v.role.id==='lion'&&!isBlk(v)){
+      if(!ev.some(e=>e.d.includes(v.name)))
+        ev.push({t:'saved',i:'✨',tit:'Захищений',d:`${v.name} не постраждав цієї ночі`});
+    } else {
+      if(!ev.some(e=>e.t==='death'&&e.d.includes(v.name))){
+        v.alive=false;
+        ev.push({t:'death',i:'💀',tit:'Загинув',d:`${v.name} не прокинувся цього ранку`});
+      }
+    }
+  }
+
+  // ── Fox kill ──
+  if(G.foxVictim){
+    if(foxIsBlocked){
+      // fox blocked — no event shown publicly
+    } else {
+      const v=G.foxVictim;
+      if(v.role.id==='lion'&&!isBlk(v)){
+        if(!ev.some(e=>e.d.includes(v.name)))
+          ev.push({t:'saved',i:'✨',tit:'Захищений',d:`${v.name} не постраждав цієї ночі`});
+      } else if(!ev.some(e=>e.t==='death'&&e.d.includes(v.name))){
+        v.alive=false;
+        ev.push({t:'death',i:'💀',tit:'Загинув',d:`${v.name} не прокинувся цього ранку`});
+      }
+    }
+  }
+
+  // ── Cat self-heal cooldown — track if any cat healed itself ──
+  G.catSavedSelfLastNight=false;
+  Object.entries(G.catChoices||{}).forEach(([catIdxStr,target])=>{
+    const cat=G.players[parseInt(catIdxStr)];
+    if(cat&&target===cat&&!isBlk(cat)) G.catSavedSelfLastNight=true;
+  });
+
+  // ── Dog checks — one result per dog ──
+  G.dogResults={};
+  const dogResultsForMorning=[];
+  Object.entries(G.dogChoices||{}).forEach(([dogIdxStr,target])=>{
+    const dog=G.players[parseInt(dogIdxStr)];
+    if(!dog||!target)return;
+    if(isBlk(dog)){
+      dogResultsForMorning.push({dog,result:null,blocked:true});
+      ev.push({t:'info',i:'🐻',tit:`Пес заблокований (${dog.name})`,d:'Пес намагався перевірити, але заблокований — результату немає'});
+    } else {
+      let label;
+      if(target.role.id==='fox'&&foxIsBlocked){
+        label='🐺 ВОВК (Лис заблокований — маска спала)';
+      } else if(target.role.id==='fox'){
+        label='Мирний житель (насправді 🦊 Лис)';
+      } else {
+        label=target.role.ico+' '+target.role.nm;
+      }
+      const res=`${target.name} — ${label}`;
+      G.dogResults[dogIdxStr]=res;
+      dogResultsForMorning.push({dog,result:res,blocked:false});
+      ev.push({t:'info',i:'🐕',tit:`Пес перевірив (${dog.name})`,d:`Результат: ${res}`});
+    }
+  });
+  G._dogResultsForMorning=dogResultsForMorning;
+  // Legacy single dogResult for morning display
+  const firstDogResult=dogResultsForMorning.find(r=>r.result);
+  G.dogResult=firstDogResult?firstDogResult.result:null;
+
+  G.nightEvents=ev;
+
+  // ── Collect newly dead for stamp queue ──
+  const newlyDead=ev.filter(e=>e.t==='death').map(e=>{
+    return G.players.find(p=>!p.alive&&!p.isHost&&e.d.startsWith(p.name));
+  }).filter(Boolean);
+  // Wolves and tigers cannot stamp — they are the enemy
+  G._stampQueue=newlyDead.filter(p=>!['wolf','tiger'].includes(p.role.id));
+
+  // ── Fix 8: instant village win if all threats eliminated after night ──
+  const aliveNow=G.players.filter(p=>p.alive&&!p.isHost);
+  if(!aliveNow.some(p=>['wolf','tiger','fox'].includes(p.role.id))){
+    G.history.push({round:G.round,events:[...G.nightEvents],expelled:null,gorillaV:null});
+    G.round++;
+    renderGO();
+    return;
+  }
+
+  // ── Raccoon ──
+  const raccoonStealHappens=G.raccoonVictim&&!G.raccoonUsed&&!raccoonIsBlocked;
+  const raccoonBlocked=G.raccoonVictim&&!G.raccoonUsed&&raccoonIsBlocked;
+
+  if(raccoonStealHappens){
+    G.raccoonUsed=true;
+    const stolen=G.raccoonVictim;
+    const rp=G.players.find(p=>(p.isRaccoon||p.role.id==='raccoon')&&p.alive);
+    if(rp){rp.role=stolen.role;rp.isRaccoon=false;}
+    // show raccoon reveal, then stamps, then morning
+    showRaccoonReveal(stolen.role, ()=>processStampQueue(renderMorning));
+  } else if(raccoonBlocked){
+    // show blocked overlay, then stamps, then morning
+    document.getElementById('raccoon-blocked').style.display='flex';
+    G._afterRaccoonBlocked=()=>processStampQueue(renderMorning);
+  } else {
+    processStampQueue(renderMorning);
+  }
+}
+
+// ─── RACCOON REVEAL ───
+let _raccoonCallback=null;
+function showRaccoonReveal(role, callback){
+  _raccoonCallback=callback||renderMorning;
+  document.getElementById('raccoon-role-card').innerHTML=`
+    <div class="rolecard" style="background:${role.bg};border:1px solid ${role.ac}50">
+      <span class="rcico">${role.ico}</span>
+      <div class="rcnm" style="color:${role.ac}">${role.nm}</div>
+      <div class="rcds">${role.sh}</div>
+      <span class="tbadge" style="background:${role.tc}18;color:${role.tc};border:1px solid ${role.tc}45">${role.tl}</span>
+    </div>
+    <div style="margin-top:12px;font-size:14px;color:rgba(212,232,255,.82);line-height:1.65">
+      ${role.abl.map(a=>`<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)">${a}</div>`).join('')}
+    </div>`;
+  document.getElementById('raccoon-reveal').classList.add('show');
+}
+function closeRaccoonReveal(){
+  document.getElementById('raccoon-reveal').classList.remove('show');
+  if(_raccoonCallback){const cb=_raccoonCallback;_raccoonCallback=null;cb();}
+  else renderMorning();
+}
+function closeRaccoonBlocked(){
+  document.getElementById('raccoon-blocked').style.display='none';
+  if(G._afterRaccoonBlocked){const cb=G._afterRaccoonBlocked;G._afterRaccoonBlocked=null;cb();}
+  else processStampQueue(renderMorning);
+}
+
+// ─── STAMP (ghost mark) SYSTEM ───
+let _stampDoneCallback=null;
+let _currentStampGhost=null;
+let _selectedStampTarget=null;
+
+function processStampQueue(done){
+  // Work through newly dead players one by one
+  if(!G._stampQueue||G._stampQueue.length===0){done();return;}
+  const ghost=G._stampQueue.shift();
+  _currentStampGhost=ghost;
+  _selectedStampTarget=null;
+  _stampDoneCallback=()=>processStampQueue(done);
+  showStampOverlay(ghost);
+}
+
+function showStampOverlay(ghost){
+  document.getElementById('stamp-killer-name').textContent=`${ghost.role.ico} ${ghost.name} вбитий вночі`;
+  const targets=alive();
+  document.getElementById('stamp-picker').innerHTML=
+    `<div class="pkrow sel" id="sp-null" onclick="selectStamp(null)"><span class="pkico">—</span><span class="pknm" style="color:var(--text-dim)">Не ставити клеймо</span><span class="pkck">✓</span></div>`+
+    targets.map(p=>{const i=G.players.indexOf(p);return(
+      `<div class="pkrow" id="sp-${i}" onclick="selectStamp(${i})">
+        <span class="pkico">${p.role.ico}</span><span class="pknm">${p.name}</span><span class="pkck"></span>
+      </div>`
+    );}).join('');
+  document.getElementById('stamp-overlay').style.display='block';
+}
+
+function selectStamp(idx){
+  document.querySelectorAll('#stamp-picker .pkrow').forEach(r=>{r.classList.remove('sel');r.querySelector('.pkck').textContent='';});
+  const key=idx===null?'sp-null':'sp-'+idx;
+  const el=document.getElementById(key);
+  if(el){el.classList.add('sel');el.querySelector('.pkck').textContent='✓';}
+  _selectedStampTarget=idx===null?null:G.players[idx];
+}
+
+function confirmStamp(){
+  document.getElementById('stamp-overlay').style.display='none';
+  if(_selectedStampTarget){
+    G.dayStamps.push({on:_selectedStampTarget, bonus:0.5, from:_currentStampGhost});
+  }
+  _currentStampGhost=null;_selectedStampTarget=null;
+  if(_stampDoneCallback){const cb=_stampDoneCallback;_stampDoneCallback=null;cb();}
+}
+
+function skipStamp(){
+  document.getElementById('stamp-overlay').style.display='none';
+  _currentStampGhost=null;_selectedStampTarget=null;
+  if(_stampDoneCallback){const cb=_stampDoneCallback;_stampDoneCallback=null;cb();}
+}
+
+// ─── MORNING ───
+function renderMorning(){
+  setPhase('morning');
+  const deadThisNight=G.nightEvents.filter(e=>e.t==='death');
+  const savedThisNight=G.nightEvents.filter(e=>e.t==='saved'&&e.i==='✨');
+  const blockedThisNight=G.nightEvents.filter(e=>e.t==='blocked');
+  let summaryHTML='';
+  if(deadThisNight.length>0){
+    const names=deadThisNight.map(e=>e.d.split(' ')[0]).join(', ');
+    summaryHTML+=`<div class="evc ev-death"><span class="evico">💀</span><div><div class="evtit" style="color:#e05555">Цієї ночі загинули</div><div class="evdsc">${names}</div></div></div>`;
+  } else {
+    summaryHTML+=`<div class="evc ev-saved"><span class="evico">🌙</span><div><div class="evtit" style="color:#4ade80">Тиха ніч</div><div class="evdsc">Цієї ночі ніхто не загинув</div></div></div>`;
+  }
+  blockedThisNight.forEach(e=>{
+    summaryHTML+=`<div class="evc ev-blocked"><span class="evico">🚫</span><div><div class="evtit" style="color:#fbbf24">Заблокований</div><div class="evdsc">${e.d}</div></div></div>`;
+  });
+  document.getElementById('mrn-events').innerHTML=summaryHTML;
+  const al=alive();
+  document.getElementById('mrn-alive').innerHTML=`
+    <div class="slbl">Живі гравці (${al.length})</div>
+    <div class="plist" style="margin-bottom:14px">
+      ${al.map((p,i)=>{
+        const stamp=G.dayStamps.find(s=>s.on===p);
+        return`<div class="prow"><span class="pnum">${i+1}</span><span class="pico">${p.role.ico}</span><span class="pname">${p.name}</span>${p.blocked?'<span class="btag">🚫 заблок.</span>':''}${stamp?`<span style="font-size:11px;color:#c084fc;background:rgba(168,85,247,.15);padding:2px 7px;border-radius:8px;border:1px solid rgba(168,85,247,.35)">👻+0.5</span>`:''}</div>`;
+      }).join('')}
+    </div>`;
+  const db=document.getElementById('mrn-dog');
+  const dogResults=G._dogResultsForMorning||[];
+  if(dogResults.length>0){
+    db.innerHTML=dogResults.map(({dog,result,blocked})=>`
+      <div class="dogbox">
+        <div class="doglbl">🐕 Тільки для: ${dog.name}</div>
+        ${blocked?`<div style="font-size:13px;color:var(--red)">Заблокований — результату немає</div>`:`<div style="font-size:13px;color:var(--text-dim);margin-bottom:4px">Результат перевірки:</div><div class="dogres">${result}</div>`}
+      </div>`).join('');
+  } else { db.innerHTML=''; }
+  document.getElementById('mrn-btn').textContent=`☀️ Почати день ${G.round}`;
+  goTo('screen-morning');
+}
+
+
+// ─── DAY ───
+function startDay(){
+  clearInterval(tmrInterval);tmrRunning=false;
+  setPhase('day');
+  G.dayExpelled=null;G.gorillaVictim=null;
+  // bearBlocked stays active through the day too (set at startNight, persists here)
+  // Ensure blocked flag is set on the player object for day logic
+  G.players.forEach(p=>p.blocked=!!(G.bearBlocked&&G.bearBlocked===p));
+  // Store blocked name for reliable gorilla check at vote time
+  G._blockedPlayerName=G.bearBlocked?G.bearBlocked.name:null;
+  document.getElementById('day-ttl').textContent=`ДЕНЬ ${G.round}`;
+  const tp=document.getElementById('tmr-panel');
+  tp.style.display=tmrEnabled?'block':'none';
+  if(tmrEnabled){tmrSeconds=tmrMinutes*60;document.getElementById('tmr-disp').textContent=fmtT(tmrSeconds);document.getElementById('tmr-disp').classList.remove('urgent');}
+  buildDayRoles();
+  document.getElementById('gor-warn').style.display='none';
+  const al=alive();
+  let rows=`<div class="pkrow sel" data-idx="null"><span class="pkico">—</span><span class="pknm" style="color:var(--text-dim)">Нікого не вигнали</span><span class="pkck">✓</span></div>`;
+  rows+=al.map(p=>{
+    const i=G.players.indexOf(p);
+    const stamp=G.dayStamps.find(s=>s.on===p);
+    return`<div class="pkrow" data-idx="${i}">
+      <span class="pkico">${p.role.ico}</span>
+      <span class="pknm">${p.name}${stamp?` <span style="font-size:11px;color:#c084fc">👻+0.5</span>`:''}</span>
+      <span class="pkck"></span>
+    </div>`;
+  }).join('');
+  document.getElementById('day-picker').innerHTML=rows;
+  document.querySelectorAll('#day-picker .pkrow').forEach(row=>{
+    row.addEventListener('click',()=>{
+      document.querySelectorAll('#day-picker .pkrow').forEach(r=>{r.classList.remove('sel');r.querySelector('.pkck').textContent='';});
+      row.classList.add('sel');row.querySelector('.pkck').textContent='✓';
+      const idx=row.dataset.idx;
+      G.dayExpelled=idx==='null'?null:G.players[parseInt(idx)];
+      document.getElementById('gor-warn').style.display=G.dayExpelled?.role.id==='gorilla'?'flex':'none';
+    });
+  });
+  goTo('screen-day');
+}
+
+function buildDayRoles(){
+  const al=alive();
+  const grps={};
+  al.forEach(p=>{if(!grps[p.role.id])grps[p.role.id]={role:p.role,names:[],blocked:[]};
+    if(p.blocked)grps[p.role.id].blocked.push(p.name);
+    else grps[p.role.id].names.push(p.name);
+  });
+  const order=['wolf','tiger','fox','raccoon','gorilla','lion','bear','dog','cat','sheep'];
+  const sorted=order.filter(id=>grps[id]).map(id=>grps[id]);
+  Object.values(grps).forEach(g=>{if(!sorted.includes(g))sorted.push(g);});
+
+  // Build current block notice
+  const blockNotice=G.bearBlocked
+    ?`<div style="background:rgba(55,40,5,.6);border:1px solid rgba(201,168,76,.35);border-radius:10px;padding:10px 12px;margin-bottom:11px;font-size:13px;color:#fbbf24">🚫 <b>${G.bearBlocked.name}</b> заблокований — здатність не діє цей день і ніч${G.bearBlocked.role.id==='lion'?' (Лев НЕ безсмертний!)':''}</div>`
+    :'';
+  const pendingNotice=G.bearPendingBlock
+    ?`<div style="background:rgba(30,25,5,.5);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:10px 12px;margin-bottom:11px;font-size:13px;color:rgba(251,191,36,.7)">⏳ <b>${G.bearPendingBlock.name}</b> буде заблоковано з наступної ночі</div>`
+    :'';
+
+  const stampNotice=G.dayStamps.length>0
+    ?`<div style="background:rgba(80,20,120,.4);border:1px solid rgba(168,85,247,.4);border-radius:10px;padding:10px 12px;margin-bottom:11px;font-size:13px;color:#c084fc">👻 Клейма цього дня: ${G.dayStamps.map(s=>`<b>${s.on.name}</b> (+0.5 голосу від ${s.from.name})`).join(', ')}</div>`
+    :'';
+  document.getElementById('day-roles').innerHTML=`
+    <div class="drptit">🔐 ТІЛЬКИ ДЛЯ ВЕДУЧОГО — РОЛІ ЖИВИХ</div>
+    ${blockNotice}${pendingNotice}${stampNotice}
+    ${sorted.map(g=>`
+      <div class="drgrp">
+        <div class="drgnm"><span style="font-size:18px">${g.role.ico}</span><span style="font-family:'Cinzel',serif;font-size:12px;color:${g.role.ac}">${g.role.nm}</span></div>
+        <div class="drgpl">${[...g.names,...g.blocked.map(n=>`<span style="opacity:.5;text-decoration:line-through">${n} 🚫</span>`)].join(', ')}</div>
+      </div>`).join('')}`;
+}
+
+function resolveDay(){
+  if(!G.dayExpelled){finishDay(null,null);return;}
+  const expFull=`${G.dayExpelled.name} (${G.dayExpelled.role.ico} ${G.dayExpelled.role.nm})`;
+  G.dayExpelled.alive=false;
+  // Gorilla revenge ALWAYS works — bear cannot block this ability
+  if(G.dayExpelled.role.id==='gorilla'){
+    showGorMenu();return;
+  }
+  finishDay(expFull,null);
+}
+function showGorMenu(){
+  const al=alive();
+  let rows=`<div class="pkrow sel" data-idx="null"><span class="pkico">—</span><span class="pknm" style="color:var(--text-dim)">Горила нікого не забирає</span><span class="pkck">✓</span></div>`;
+  rows+=al.map(p=>{const i=G.players.indexOf(p);return`<div class="pkrow" data-idx="${i}"><span class="pkico">${p.role.ico}</span><span class="pknm">${p.name}</span><span class="pkck"></span></div>`;}).join('');
+  document.getElementById('gor-picker').innerHTML=rows;
+  document.querySelectorAll('#gor-picker .pkrow').forEach(row=>{
+    row.addEventListener('click',()=>{
+      document.querySelectorAll('#gor-picker .pkrow').forEach(r=>{r.classList.remove('sel');r.querySelector('.pkck').textContent='';});
+      row.classList.add('sel');row.querySelector('.pkck').textContent='✓';
+      G.gorillaVictim=row.dataset.idx==='null'?null:G.players[parseInt(row.dataset.idx)];
+    });
+  });
+  document.getElementById('gov').classList.add('show');
+}
+function resolveGorilla(){
+  document.getElementById('gov').classList.remove('show');
+  const exp=G.dayExpelled?`${G.dayExpelled.name} (${G.dayExpelled.role.ico} ${G.dayExpelled.role.nm})`:null;
+  let gV=null;
+  if(G.gorillaVictim){G.gorillaVictim.alive=false;gV=`${G.gorillaVictim.name} (${G.gorillaVictim.role.ico} ${G.gorillaVictim.role.nm})`;}
+  finishDay(exp,gV);
+}
+function finishDay(exp,gV){
+  G.dayStamps=[];  // stamps expire after one day
+  G.history.push({round:G.round,events:[...G.nightEvents],expelled:exp,gorillaV:gV});
+  G.round++;
+  if(checkWin()){renderGO();return;}
+  startNight();
+}
+function checkWin(){
+  const al=alive();
+  const wolves=al.filter(p=>p.role.id==='wolf');
+  const tigers=al.filter(p=>p.role.id==='tiger');
+  const fox=al.filter(p=>p.role.id==='fox');
+  const village=al.filter(p=>!['wolf','tiger','fox'].includes(p.role.id));
+  if(!wolves.length&&!tigers.length&&!fox.length)return true;
+  if(wolves.length&&wolves.length>=village.length+tigers.length)return true;
+  if(tigers.length&&tigers.length>=village.length+wolves.length)return true;
+  if(fox.length&&!wolves.length&&!tigers.length&&!village.length)return true;
+  return false;
+}
+
+// ─── GAME OVER ───
+function renderGO(){
+  setPhase('home');
+  const al=alive();
+  const wolves=al.filter(p=>p.role.id==='wolf');
+  const tigers=al.filter(p=>p.role.id==='tiger');
+  const fox=al.filter(p=>p.role.id==='fox');
+  let wt,wc;
+  if(!wolves.length&&!tigers.length&&!fox.length){wt='🐑 СЕЛО ПЕРЕМОГЛО!';wc='#4ade80';}
+  else if(wolves.length){wt='🐺 ВОВКИ ПЕРЕМОГЛИ!';wc='#e05555';}
+  else if(tigers.length){wt='🐯 ТИГРИ ПЕРЕМОГЛИ!';wc='#f97316';}
+  else{wt='🦊 ЛИС ПЕРЕМІГ!';wc='#fb923c';}
+  document.getElementById('win-txt').style.color=wc;
+  document.getElementById('win-txt').textContent=wt;
+  const rp=G.players.filter(p=>!p.isHost);
+  document.getElementById('go-stats').textContent=`РАУНД ${G.round-1}  •  ${rp.length} ГРАВЦІВ`;
+  document.getElementById('go-players').innerHTML=rp.map((p,i)=>`
+    <div class="prow ${p.alive?'':'pdead'}">
+      <span class="pnum">${i+1}</span><span class="pico">${p.role.ico}</span>
+      <div style="flex:1"><div class="pname">${p.name}</div><div style="font-size:12px;color:${p.role.ac}">${p.role.nm}</div></div>
+      <span style="font-size:11px;font-family:'Cinzel',serif;padding:2px 8px;border-radius:8px;${p.alive?'color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3)':'color:#7f5050;background:rgba(120,40,40,.2);border:1px solid rgba(120,40,40,.3)'}">
+        ${p.alive?'живий':'загинув'}
+      </span>
+    </div>`).join('');
+  let hist='';
+  if(G.history.length){
+    hist='<div class="slbl" style="margin-bottom:9px">Хроніка гри</div>';
+    hist+=G.history.map(rec=>{
+      const lines=rec.events.filter(e=>e.t!=='info').map(e=>`<div class="hline"><span>${e.i}</span><span>${e.d}</span></div>`).join('');
+      const exp=rec.expelled?`<div class="hline"><span>🗳</span><span>Вигнали: ${rec.expelled}</span></div>`:'';
+      const gor=rec.gorillaV?`<div class="hline" style="color:var(--teal)"><span>🦍</span><span>Горила забрала: ${rec.gorillaV}</span></div>`:'';
+      return`<div class="hcard"><div class="hrnd">Ніч &amp; День ${rec.round}</div>${lines}${exp}${gor}</div>`;
+    }).join('');
+  }
+  document.getElementById('go-hist').innerHTML=hist;
+  goTo('screen-go');
+}
+function newGame(){
+  G={playerCount:G.playerCount,assignedRoles:[],players:[],currentIdx:0,round:1,history:[],nightEvents:[],
+     wolfVictim:null,tigerVictim:null,catSaved:null,bearPendingBlock:null,bearBlocked:null,
+     foxVictim:null,dogChecked:null,dogResult:null,dayExpelled:null,gorillaVictim:null,
+     raccoonVictim:null,raccoonUsed:false,catSavedSelfLastNight:false,
+     nightStamp:null,dayStamps:[],foxBlockedThisNight:false,_stampQueue:[],
+     catChoices:{},dogChoices:{},dogResults:{},_dogResultsForMorning:[],
+     _blockedPlayerName:null};
+  document.getElementById('cnt-disp').textContent=G.playerCount;
+  setPhase('home');
+  goTo('screen-welcome');
+}
+
+function switchRulesTab(tab){
+  ['general','phases','roles'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+    const btn=document.getElementById('tab-btn-'+t);
+    if(t===tab){
+      btn.style.background='rgba(201,168,76,.25)';
+      btn.style.color='#f0d080';
+      btn.style.border='1px solid rgba(201,168,76,.5)';
+    } else {
+      btn.style.background='rgba(255,255,255,.06)';
+      btn.style.color='var(--silver)';
+      btn.style.border='1px solid rgba(255,255,255,.1)';
+    }
+  });
+}
+
+renderRules();
+</script>
+</body>
+</html>
