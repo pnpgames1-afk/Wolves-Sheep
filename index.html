@@ -344,7 +344,7 @@ body{display:flex;justify-content:center;min-height:100vh}
 
 /* ── Welcome screen ── */
 #screen-welcome{background:transparent;padding:0;min-height:100vh}
-.welcome-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 28px;position:relative;z-index:2}
+.welcome-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 28px 50px;position:relative;z-index:2}
 @keyframes logoAppear{0%{opacity:0;transform:scale(.7) translateY(20px)}60%{transform:scale(1.06) translateY(-4px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes taglineIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes btnIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
@@ -1985,26 +1985,39 @@ function clearSave() {
 // Show restore banner if there's a saved game
 function checkForSavedGame() {
   if (!hasSavedGame()) return;
-  const banner = document.createElement('div');
-  banner.id = 'restore-banner';
-  banner.innerHTML = `
-    <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;
-      background:linear-gradient(135deg,#0a1830,#0d1f40);border-top:1px solid rgba(74,144,226,.4);
-      padding:16px 20px;z-index:999;display:flex;align-items:center;gap:12px;
-      box-shadow:0 -8px 30px rgba(0,0,0,.4);animation:fi .4s ease both">
-      <span style="font-size:28px">💾</span>
-      <div style="flex:1">
-        <div style="font-family:'Cinzel',serif;font-size:13px;color:#93c5fd;letter-spacing:1px">Знайдено збережену гру</div>
-        <div style="font-size:13px;color:var(--text-dim);margin-top:2px">Продовжити з того місця?</div>
-      </div>
-      <button onclick="doRestore()" style="background:linear-gradient(135deg,#c9a84c,#7a5c10);color:#0a0f1a;
-        border:none;border-radius:10px;padding:10px 16px;font-family:'Cinzel',serif;font-size:12px;
-        font-weight:700;letter-spacing:1px;cursor:pointer;flex-shrink:0">Так</button>
-      <button onclick="doClearSave()" style="background:rgba(255,255,255,.07);color:var(--silver);
-        border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 16px;
-        font-family:'Cinzel',serif;font-size:12px;cursor:pointer;flex-shrink:0">Ні</button>
-    </div>`;
-  document.body.appendChild(banner);
+  // Show how long ago
+  let timeAgo = '';
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+    const mins = Math.floor((Date.now() - s.savedAt) / 60000);
+    if (mins < 1) timeAgo = 'щойно';
+    else if (mins < 60) timeAgo = `${mins} хв тому`;
+    else { const h = Math.floor(mins/60); timeAgo = `${h} год тому`; }
+    const round = s.round || 1;
+    const alive = (s.players||[]).filter(p=>p.alive&&!p.isHost).length;
+    const wrap = document.createElement('div');
+    wrap.id = 'restore-banner';
+    wrap.style.cssText = 'margin-top:6px;padding:16px;background:rgba(10,24,48,.85);'+
+      'border:1px solid rgba(74,144,226,.4);border-radius:16px;text-align:center;'+
+      'backdrop-filter:blur(10px);animation:fi .4s ease both';
+    wrap.innerHTML = `
+      <div style="font-size:24px;margin-bottom:8px">💾</div>
+      <div style="font-family:'Cinzel',serif;font-size:13px;color:#93c5fd;letter-spacing:1px;margin-bottom:4px">Знайдено збережену гру</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px">Раунд ${round} · ${alive} живих · ${timeAgo}</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-bottom:14px">Продовжити з того місця?</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button onclick="doRestore()" style="flex:1;max-width:140px;background:linear-gradient(135deg,#c9a84c,#7a5c10);color:#0a0f1a;
+          border:none;border-radius:10px;padding:12px;font-family:'Cinzel',serif;font-size:13px;
+          font-weight:700;letter-spacing:1px;cursor:pointer">Так</button>
+        <button onclick="doClearSave()" style="flex:1;max-width:140px;background:rgba(255,255,255,.07);color:var(--silver);
+          border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:12px;
+          font-family:'Cinzel',serif;font-size:13px;cursor:pointer">Ні</button>
+      </div>`;
+    const welcomeScreen = document.getElementById('screen-welcome');
+    const btnWrap = welcomeScreen.querySelector('.welcome-btn-wrap');
+    if (btnWrap) btnWrap.after(wrap);
+    else welcomeScreen.querySelector('.welcome-wrap').appendChild(wrap);
+  } catch(e) {}
 }
 
 function doRestore() {
@@ -2024,14 +2037,14 @@ function doRestore() {
       note.textContent = '✓ Гру відновлено';
       document.body.appendChild(note);
       setTimeout(() => note.remove(), 3000);
-    }, 500);
+    }, 400);
   }
 }
 
 function doClearSave() {
   clearSave();
   const banner = document.getElementById('restore-banner');
-  if (banner) banner.remove();
+  if (banner) { banner.style.animation='none'; banner.style.opacity='0'; banner.style.transition='opacity .3s'; setTimeout(()=>banner.remove(), 300); }
 }
 
 // Save on tab close/refresh
