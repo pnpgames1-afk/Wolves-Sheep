@@ -2,8 +2,20 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🐺 Вовки & Вівці</title>
+<meta name="description" content="Рольова гра Вовки і Вівці — цифровий ведучий для компанії">
+<meta name="theme-color" content="#050d1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Вовки & Вівці">
+
+<!-- Favicon — SVG wolf silhouette -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='.5' y2='1'%3E%3Cstop offset='0%25' stop-color='%23b0c8ff'/%3E%3Cstop offset='100%25' stop-color='%234a65c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='%23050d1a'/%3E%3Cpath fill='url(%23g)' d='M50,92 L47,91 L44,93 L41,90 L37,91 L36,87 L30,89 L32,84 L25,85 L29,80 L19,80 L25,74 L14,72 L22,66 L11,62 L21,58 L11,52 L22,50 L14,43 L24,43 L19,35 L30,38 L28,28 L38,34 L38,22 L46,30 L48,14 L50,10 L52,14 L54,30 L62,22 L62,34 L72,28 L70,38 L81,35 L76,43 L86,43 L78,50 L89,52 L79,58 L89,62 L78,66 L86,72 L75,74 L81,80 L71,80 L75,85 L68,84 L70,89 L63,87 L59,90 L56,93 L53,91 Z'/%3E%3C/svg%3E">
+
+<!-- Apple touch icon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23050d1a'/%3E%3Cpath fill='%234a65c0' d='M50,92 L47,91 L44,93 L41,90 L37,91 L36,87 L30,89 L32,84 L25,85 L29,80 L19,80 L25,74 L14,72 L22,66 L11,62 L21,58 L11,52 L22,50 L14,43 L24,43 L19,35 L30,38 L28,28 L38,34 L38,22 L46,30 L48,14 L50,10 L52,14 L54,30 L62,22 L62,34 L72,28 L70,38 L81,35 L76,43 L86,43 L78,50 L89,52 L79,58 L89,62 L78,66 L86,72 L75,74 L81,80 L71,80 L75,85 L68,84 L70,89 L63,87 L59,90 L56,93 L53,91 Z'/%3E%3C/svg%3E">
+
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -313,7 +325,7 @@ body{display:flex;justify-content:center;min-height:100vh}
 #screen-handoff{background:#020810;padding:0;min-height:100vh}
 #gov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;overflow-y:auto}
 #gov.show{display:flex;align-items:flex-start;justify-content:center}
-.gomod{width:100%;max-width:430px;background:#060e1e;border-radius:22px;border:1px solid rgba(45,212,191,.32);padding:26px 22px;margin:18px 14px;text-align:center}
+.gomod{width:100%;max-width:min(430px, calc(100vw - 32px));background:#060e1e;border-radius:22px;border:1px solid rgba(45,212,191,.32);padding:26px 22px;margin:18px auto;text-align:center}
 .rules-block{background:rgba(8,20,50,.55);border:1px solid rgba(74,144,226,.18);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
 .rules-h{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:1px}
 .rules-p{font-size:14px;color:rgba(212,232,255,.78);line-height:1.75}
@@ -352,6 +364,152 @@ body{display:flex;justify-content:center;min-height:100vh}
 /* ── Raccoon fullscreen ── */
 #raccoon-reveal{display:none;position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#04020f,#080418,#0a0520);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 24px;cursor:pointer}
 #raccoon-reveal.show{display:flex}
+
+/* ══════════════════════════════════
+   RESPONSIVE — TABLET & DESKTOP
+══════════════════════════════════ */
+
+body {
+  background: #020810;
+  align-items: flex-start;
+}
+
+/* Moon always stays INSIDE the app card */
+.sky-obj {
+  position: absolute !important;
+  top: 52px;
+  right: 22px;
+}
+
+/* Blur on all semi-transparent panels */
+.card, .nsec, .drp, .dogbox, .ibox, .plist,
+.rrow, .trow, .cbox, .tmrbox,
+.hcard, .rules-block, .day-roles-panel {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Tablet (600px+) ── */
+@media (min-width: 600px) {
+  #app {
+    max-width: 560px;
+    border-radius: 24px;
+    margin: 20px auto;
+    min-height: calc(100vh - 40px);
+    box-shadow: 0 0 80px rgba(74,144,226,.15), 0 0 0 1px rgba(74,144,226,.1);
+  }
+  #bgc { max-width: 560px; border-radius: 24px; }
+  .night-fog { max-width: 560px; }
+  .screen { padding: 0 28px 60px; }
+  .hs { height: 100px; }
+  .ttl { font-size: 32px; }
+  .cnum { font-size: 56px; }
+  .btn { font-size: 14px; padding: 16px; }
+  .pname { font-size: 18px; }
+  .welcome-logo { font-size: 130px; }
+  .welcome-title { font-size: 40px; }
+  .welcome-desc { font-size: 17px; }
+  .nsec { padding: 18px; }
+  .pkrow { padding: 12px 14px; }
+  .pknm { font-size: 16px; }
+  .evc { padding: 16px; }
+  .evdsc { font-size: 15px; }
+  .rolecard { padding: 30px 24px; }
+  .rcico { font-size: 80px; }
+  .rcnm { font-size: 26px; }
+  .ablrow { padding: 10px 0; }
+  .abltxt { font-size: 15px; }
+  .rrow { padding: 12px 16px; }
+  .ricon { font-size: 26px; }
+  .rules-block { padding: 16px 20px; }
+  .rules-p { font-size: 15px; }
+  .dogbox { padding: 16px; }
+}
+
+/* ── Laptop / Desktop (900px+) ── */
+@media (min-width: 900px) {
+  body {
+    align-items: stretch;
+    /* Full-width gradient background across entire screen */
+    background: linear-gradient(180deg, #020810 0%, #040e20 40%, #060e28 100%);
+    min-height: 100vh;
+  }
+
+  /* Full-screen background canvas */
+  #bgc {
+    max-width: 100vw;
+    left: 0;
+    transform: none;
+    border-radius: 0;
+    opacity: .6;
+  }
+  .night-fog { max-width: 100vw; left: 0; transform: none; }
+  .morning-rays { left: 50%; }
+
+  /* App card centered, tall */
+  #app {
+    max-width: 500px;
+    margin: 0 auto;
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow:
+      -1px 0 0 rgba(74,144,226,.08),
+       1px 0 0 rgba(74,144,226,.08),
+       0 0 60px rgba(74,144,226,.06);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Decorative side panels */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 35% 70% at 12% 40%, rgba(74,144,226,.07) 0%, transparent 70%),
+      radial-gradient(ellipse 35% 70% at 88% 60%, rgba(74,144,226,.05) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(74,144,226,.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { padding: 0 32px 60px; }
+  .ttl { font-size: 30px; }
+  .btn { font-size: 14px; }
+  .welcome-logo { font-size: 120px; }
+  .welcome-title { font-size: 36px; }
+}
+
+/* ── Large desktop (1200px+) ── */
+@media (min-width: 1200px) {
+  #app { max-width: 520px; }
+}
+
+/* ── Scrollbar styling ── */
+@media (min-width: 600px) {
+  #app::-webkit-scrollbar { width: 4px; }
+  #app::-webkit-scrollbar-track { background: transparent; }
+  #app::-webkit-scrollbar-thumb { background: rgba(74,144,226,.3); border-radius: 4px; }
+  #app::-webkit-scrollbar-thumb:hover { background: rgba(74,144,226,.5); }
+}
+
+/* ── Hover states for mouse users ── */
+@media (hover: hover) {
+  .pkrow:hover { background: rgba(74,144,226,.1); border-color: rgba(74,144,226,.25); cursor: pointer; }
+  .rrow:hover { border-color: rgba(74,144,226,.35); }
+  .prow:hover { background: rgba(74,144,226,.05); }
+  .bg:hover { filter: brightness(1.1); }
+  .bb:hover { background: rgba(74,144,226,.18); }
+  .welcome-role-chip:hover { transform: scale(1.2); background: rgba(255,255,255,.1); }
+  .btn:hover { filter: brightness(1.08); }
+  .cbtn:hover { background: rgba(74,144,226,.28); }
+  .rbtn:hover { background: rgba(74,144,226,.28); }
+}
+
+/* ── Keyboard focus ── */
+.btn:focus-visible, .cbtn:focus-visible, .rbtn:focus-visible {
+  outline: 2px solid rgba(74,144,226,.7);
+  outline-offset: 2px;
+}
 </style>
 </head>
 <body>
@@ -882,9 +1040,13 @@ let G={
 
 // ─── UTILS ───
 function goTo(id){
+  G.screen_name=id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('app').scrollTop=0;window.scrollTo(0,0);
+  if(['screen-night','screen-morning','screen-day','screen-gs'].includes(id)){
+    saveGame();
+  }
 }
 function alive(){return G.players.filter(p=>p.alive&&!p.isHost);}
 function dead(){return G.players.filter(p=>!p.alive&&!p.isHost);}
@@ -972,12 +1134,15 @@ function resetTmr(){clearInterval(tmrInterval);tmrRunning=false;tmrSeconds=tmrMi
 // ─── START GAME ───
 function startGame(){
   if(rTotal()!==G.playerCount)return;
+  clearSave();
   let roles=[];ROLES.forEach(r=>{for(let i=0;i<(roster[r.id]||0);i++)roles.push(r);});
   G.assignedRoles=shuffle(roles);
   G.players=[];G.currentIdx=0;G.round=1;G.history=[];
   G.raccoonUsed=false;G.catSavedSelfLastNight=false;
   G.bearBlocked=null;G.bearPendingBlock=null;
   G.nightStamp=null;G.dayStamps=[];G.foxBlockedThisNight=false;
+  G._stampQueue=[];G.catChoices={};G.dogChoices={};
+  G.dogResults={};G._dogResultsForMorning=[];G._blockedPlayerName=null;
   setPhase('night');
   showCover();
 }
@@ -1671,7 +1836,209 @@ function switchRulesTab(tab){
   });
 }
 
+// ── Dynamic favicon updates with phase ──
+function updateFavicon(phase) {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const c = canvas.getContext('2d');
+    c.fillStyle = '#050d1a';
+    roundRect(c, 0, 0, 64, 64, 14); c.fill();
+    if (phase === 'night' || phase === 'home') { c.fillStyle = '#4a90e2'; }
+    else if (phase === 'morning') { c.fillStyle = '#ffb347'; }
+    else { c.fillStyle = '#ffe066'; }
+    c.beginPath(); c.arc(50, 14, 7, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(176,200,255,0.9)';
+    c.beginPath();
+    const s=0.32, ox=18, oy=6;
+    [[50,92],[47,91],[44,93],[41,90],[37,91],[36,87],[30,89],[32,84],
+     [25,85],[29,80],[19,80],[25,74],[14,72],[22,66],[11,62],[21,58],
+     [11,52],[22,50],[14,43],[24,43],[19,35],[30,38],[28,28],[38,34],
+     [38,22],[46,30],[48,14],[50,10],[52,14],[54,30],[62,22],[62,34],
+     [72,28],[70,38],[81,35],[76,43],[86,43],[78,50],[89,52],[79,58],
+     [89,62],[78,66],[86,72],[75,74],[81,80],[71,80],[75,85],[68,84],
+     [70,89],[63,87],[59,90],[56,93],[53,91]
+    ].forEach(([x,y],i)=>{ i===0?c.moveTo(x*s+ox,y*s+oy):c.lineTo(x*s+ox,y*s+oy); });
+    c.closePath(); c.fill();
+    const link=document.querySelector("link[rel~='icon']");
+    if(link) link.href=canvas.toDataURL();
+  } catch(e) {}
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+updateFavicon('home');
+
 renderRules();
+
+// ══════════════════════════════════
+//  LOCALSTORAGE AUTO-SAVE / RESTORE
+// ══════════════════════════════════
+const SAVE_KEY = 'vovky_vivtsi_save';
+
+// Save game state after every important action
+function saveGame() {
+  if (!G.players || G.players.length === 0) return;
+  try {
+    const snapshot = {
+      playerCount: G.playerCount,
+      players: G.players.map(p => ({
+        name: p.name,
+        roleId: p.role.id,
+        alive: p.alive,
+        blocked: p.blocked,
+        isHost: p.isHost || false,
+        isRaccoon: p.isRaccoon || false,
+      })),
+      round: G.round,
+      screen: G.screen_name || 'screen-gs',
+      history: G.history,
+      dayStamps: G.dayStamps.map(s => ({
+        onName: s.on.name,
+        fromName: s.from.name,
+        bonus: s.bonus,
+      })),
+      bearBlockedName: G.bearBlocked ? G.bearBlocked.name : null,
+      bearPendingName: G.bearPendingBlock ? G.bearPendingBlock.name : null,
+      raccoonUsed: G.raccoonUsed,
+      catSavedSelfLastNight: G.catSavedSelfLastNight,
+      roster, tmrEnabled, tmrMinutes,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
+  } catch(e) { console.warn('Save failed:', e); }
+}
+
+function hasSavedGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    // Expire saves older than 24h
+    return s.players && s.players.length > 0 && (Date.now() - s.savedAt) < 86400000;
+  } catch(e) { return false; }
+}
+
+function restoreGame() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (!s || !s.players) return false;
+
+    G.playerCount = s.playerCount;
+    G.round = s.round;
+    G.raccoonUsed = s.raccoonUsed || false;
+    G.catSavedSelfLastNight = s.catSavedSelfLastNight || false;
+    roster = s.roster || roster;
+    tmrEnabled = s.tmrEnabled || false;
+    tmrMinutes = s.tmrMinutes || 3;
+
+    // Restore players with full role objects
+    G.players = s.players.map(p => ({
+      name: p.name,
+      role: rById(p.roleId),
+      alive: p.alive,
+      blocked: p.blocked || false,
+      isHost: p.isHost || false,
+      isRaccoon: p.isRaccoon || false,
+    }));
+
+    // Restore bear block references
+    G.bearBlocked = s.bearBlockedName
+      ? G.players.find(p => p.name === s.bearBlockedName) || null : null;
+    G.bearPendingBlock = s.bearPendingName
+      ? G.players.find(p => p.name === s.bearPendingName) || null : null;
+    G._blockedPlayerName = s.bearBlockedName || null;
+
+    // Restore stamps
+    G.dayStamps = (s.dayStamps || []).map(ds => ({
+      on: G.players.find(p => p.name === ds.onName),
+      from: G.players.find(p => p.name === ds.fromName) || {name: ds.fromName, role: {ico:'👻',nm:'Дух'}},
+      bonus: ds.bonus,
+    })).filter(ds => ds.on);
+
+    G.history = s.history || [];
+    G.nightEvents = [];
+    G.wolfVictim = null; G.tigerVictim = null; G.catSaved = null;
+    G.foxVictim = null; G.dogChecked = null; G.dogResult = null;
+    G.catChoices = {}; G.dogChoices = {}; G.dogResults = {};
+    G._dogResultsForMorning = []; G._stampQueue = [];
+    G.raccoonVictim = null; G.dayExpelled = null; G.gorillaVictim = null;
+    G.dayStamps = G.dayStamps || [];
+    G.foxBlockedThisNight = false;
+
+    document.getElementById('cnt-disp').textContent = G.playerCount;
+    return true;
+  } catch(e) { console.warn('Restore failed:', e); return false; }
+}
+
+function clearSave() {
+  localStorage.removeItem(SAVE_KEY);
+}
+
+// Show restore banner if there's a saved game
+function checkForSavedGame() {
+  if (!hasSavedGame()) return;
+  const banner = document.createElement('div');
+  banner.id = 'restore-banner';
+  banner.innerHTML = `
+    <div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;
+      background:linear-gradient(135deg,#0a1830,#0d1f40);border-top:1px solid rgba(74,144,226,.4);
+      padding:16px 20px;z-index:999;display:flex;align-items:center;gap:12px;
+      box-shadow:0 -8px 30px rgba(0,0,0,.4);animation:fi .4s ease both">
+      <span style="font-size:28px">💾</span>
+      <div style="flex:1">
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:#93c5fd;letter-spacing:1px">Знайдено збережену гру</div>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:2px">Продовжити з того місця?</div>
+      </div>
+      <button onclick="doRestore()" style="background:linear-gradient(135deg,#c9a84c,#7a5c10);color:#0a0f1a;
+        border:none;border-radius:10px;padding:10px 16px;font-family:'Cinzel',serif;font-size:12px;
+        font-weight:700;letter-spacing:1px;cursor:pointer;flex-shrink:0">Так</button>
+      <button onclick="doClearSave()" style="background:rgba(255,255,255,.07);color:var(--silver);
+        border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 16px;
+        font-family:'Cinzel',serif;font-size:12px;cursor:pointer;flex-shrink:0">Ні</button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
+function doRestore() {
+  const banner = document.getElementById('restore-banner');
+  if (banner) banner.remove();
+  if (restoreGame()) {
+    setPhase('day');
+    renderGSData();
+    goTo('screen-gs');
+    setTimeout(() => {
+      const note = document.createElement('div');
+      note.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);'+
+        'background:rgba(74,144,226,.2);border:1px solid rgba(74,144,226,.5);'+
+        'color:#93c5fd;font-family:Cinzel,serif;font-size:12px;letter-spacing:1px;'+
+        'padding:10px 20px;border-radius:20px;z-index:999;animation:fi .3s ease both;'+
+        'white-space:nowrap;max-width:90vw;text-align:center';
+      note.textContent = '✓ Гру відновлено';
+      document.body.appendChild(note);
+      setTimeout(() => note.remove(), 3000);
+    }, 500);
+  }
+}
+
+function doClearSave() {
+  clearSave();
+  const banner = document.getElementById('restore-banner');
+  if (banner) banner.remove();
+}
+
+// Save on tab close/refresh
+window.addEventListener('beforeunload', saveGame);
+
+// Check on load
+checkForSavedGame();
 </script>
 </body>
 </html>
